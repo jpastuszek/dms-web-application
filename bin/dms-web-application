@@ -1,0 +1,104 @@
+#!/usr/bin/env ruby
+# Copyright (c) 2012 Jakub Pastuszek
+#
+# This file is part of Distributed Monitoring System.
+#
+# Distributed Monitoring System is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Distributed Monitoring System is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'cli'
+require 'ip'
+require 'sinatra/base'
+require 'dms-web-application'
+
+VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
+
+Program::Daemon.new('DMS Console Connector', VERSION) do
+	cli do
+		description 'DMS Web UI Application'
+
+		switch :no_bind, 
+			description: "Do not bind to TCP socket - useful with -s fastcgi option"
+		option :bind, 
+			short: :b,
+			default: IP.new('127.0.0.1'),
+			cast: IP,
+			description: "HTTP server bind address - use 0.0.0.0 to bind to all interfaces"
+		option :port,
+			short: :p,
+			default: 3100,
+			cast: Integer,
+			description: "HTTP server TCP port"
+		option :server,
+			short: :s,
+			default: 'Mongrel2',
+			description: "Rack server handler like thin, mongrel, webrick, fastcgi etc."
+		option :mongrel_recv_address,
+			short: :m,
+			default: 'tcp://127.0.0.1:12100',
+			description: "Mongrel2 SUB socket address (recv_spec)"
+		option :mongrel_send_address,
+			short: :M,
+			default: 'tcp://127.0.0.1:12101',
+			description: "Mongrel2 PUSH socket address (send_spec)"
+		option :chroot,
+			short: :c,
+			default: '.',
+			description: "When using Mongrel2 chroot to given directory"
+	end
+
+	main do |settings|
+		sinatra = Sinatra.new
+
+		unless settings.no_bind
+			sinatra.set :port, settings.port
+			sinatra.set :bind, settings.bind.to_s
+		else
+			sinatra.set :port, nil
+			sinatra.set :bind, nil
+		end
+
+		sinatra.set :environment, 'production'
+		sinatra.set :server, settings.server
+		sinatra.set :lock, true
+		sinatra.set :logging, true
+
+		# no way to pass options to Rack hanler other than using ENV
+		ENV['RACK_MONGREL2_UUID'] = settings.program_id
+		ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
+		ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
+		ENV['RACK_MONGREL2_CHROOT'] = settings.chroot
+
+		require 'rack/handler/mongrel2'
+
+		sinatra.before do
+			# use core logger
+			logging_class_name settings.program_class_name
+			env['rack.logger'] = log
+		end
+
+		sinatra.get '/' do
+			log.info 'hello1'
+			logger.info 'hello2'
+			'hello'
+		end
+
+		main_loop do
+			sinatra.run!
+		end
+	end
+end
+
