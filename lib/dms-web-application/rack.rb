@@ -140,6 +140,59 @@ module Rack
 				end
 			end
 
+			class Server
+				def initialize(recv_address, send_address, uuid, app)
+					ZeroMQ.new do |zmq|
+						@zmq = zmq
+						@poller = ZeroMQ::Poller.new
+
+						zmq.pull_connect(recv_address) do |pull|
+							zmq.pub_connect(send_address) do |pub|
+								pull.on_raw do |msg|
+									log.debug "got Mongrel2 request: #{msg}"
+									request = Request.parse(msg)
+									log.debug request.inspect
+
+									status, headers, response = app.call(request.env)
+
+									begin
+										pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
+
+										response.each do |body|
+											pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
+										end
+									ensure
+										#if response.respond_to? :callback
+											#response.callback do
+												#pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+											#end 
+										#else
+											pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+											response.close if response.respond_to? :close
+										#end
+									end
+								end
+
+								@poller << pull
+								yield self
+							end
+						end
+					end
+				end
+
+				attr_reader :zmq
+				attr_reader :poller
+
+				def start
+					log.info 'starting Rack handler'
+					@poller.poll!
+				end
+
+				def stop
+					log.info 'stopping Rack handler'
+				end
+			end
+
 			def self.run(app, options = {})
 				options = {
 					:recv_address => ENV['RACK_MONGREL2_RECV'],
@@ -151,39 +204,11 @@ module Rack
 				raise MissingOptionError.new('send_address', 'RACK_MONGREL2_SEND') unless options[:send_address]
 				raise MissingOptionError.new('uuid', 'RACK_MONGREL2_UUID') unless options[:uuid]
 
-				ZeroMQ.new do |zmq|
-					poller = ZeroMQ::Poller.new
-
-					zmq.pull_connect(options[:recv_address]) do |pull|
-						zmq.pub_connect(options[:send_address]) do |pub|
-							pull.on_raw do |msg|
-								log.debug "got Mongrel2 request: #{msg}"
-								request = Request.parse(msg)
-								log.debug request.inspect
-
-								status, headers, response = app.call(request.env)
-
-								begin
-									pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
-
-									response.each do |body|
-										pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
-									end
-								ensure
-									#if response.respond_to? :callback
-										#response.callback do
-											#pub.send_raw Response.close(request.uuid, request.conn_id).to_string
-										#end 
-									#else
-										pub.send_raw Response.close(request.uuid, request.conn_id).to_string
-										response.close if response.respond_to? :close
-									#end
-								end
-							end
-
-							poller << pull
-							poller.poll!
-						end
+				Server.new(options[:recv_address], options[:send_address], options[:uuid], app) do |server|
+					if block_given?
+						yield server and server.start
+					else
+						server.start
 					end
 				end
 			end

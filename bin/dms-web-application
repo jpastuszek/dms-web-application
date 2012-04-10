@@ -25,10 +25,8 @@ require 'dms-web-application'
 
 VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
 
-Program::Daemon.new('DMS Console Connector', VERSION) do
+Program::Daemon.new('DMS Web Application', VERSION) do
 	cli do
-		description 'DMS Web UI Application'
-
 		internal_console_connection
 		hello_wait
 
@@ -88,18 +86,19 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 
 		sinatra.get '/query/*' do |tag_set|
 			tag_set = TagSet.new(tag_set)
-			#log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-			#sinatra.bus.ready!(settings.program_id, settings.hello_wait)
+			log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
+			sinatra.bus.ready!(settings.program_id, settings.hello_wait)
 
-			# non blocking stream
-			#stream(:keep_open) do |out|
-				#EventMachine::PeriodicTimer.new(1) { out << "#{Time.now}\n" }
-				#EventMachine::PeriodicTimer.new(3) { out.close }
-			#end
-
-			# blocking stream
 			stream do |out|
-				30.times { out << "#{Time.now}\n"; sleep 0.2 }
+				sinatra.bus.on DataSet, settings.program_id do |data_set|
+					log.info "#{data_set}"
+					out << data_set
+				end
+
+				query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
+				sinatra.bus.send query, topic: settings.program_id
+
+				sinatra.poller.poll! 10
 			end
 		end
 
@@ -108,19 +107,20 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 		end
 
 		main_loop do
-			#ZeroMQ.new do |zmq|
-				#poller = ZeroMQ::Poller.new
-				#log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
-				#zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
-					#sinatra.set :bus, bus
-					#sinatra.set :poller, poller
-
-					ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
-					ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
-					ENV['RACK_MONGREL2_UUID'] = settings.program_id
-					sinatra.run!
-				#end
-			#end
+			ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
+			ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
+			ENV['RACK_MONGREL2_UUID'] = settings.program_id
+			sinatra.run! do |server|
+				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
+				server.zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
+					server.poller << bus
+					sinatra.set :zmq, server.zmq
+					sinatra.set :poller, server.poller
+					sinatra.set :bus, bus
+					server.start
+					false
+				end
+			end
 		end
 	end
 end
