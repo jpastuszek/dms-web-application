@@ -141,7 +141,7 @@ module Rack
 			end
 
 			class Server
-				def initialize(recv_address, send_address, uuid, app)
+				def initialize(recv_address, send_address, app)
 					ZeroMQ.new do |zmq|
 						@zmq = zmq
 						@poller = ZeroMQ::Poller.new
@@ -162,14 +162,8 @@ module Rack
 											pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
 										end
 									ensure
-										#if response.respond_to? :callback
-											#response.callback do
-												#pub.send_raw Response.close(request.uuid, request.conn_id).to_string
-											#end 
-										#else
-											pub.send_raw Response.close(request.uuid, request.conn_id).to_string
-											response.close if response.respond_to? :close
-										#end
+										pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+										response.close if response.respond_to? :close
 									end
 								end
 
@@ -196,15 +190,13 @@ module Rack
 			def self.run(app, options = {})
 				options = {
 					:recv_address => ENV['RACK_MONGREL2_RECV'],
-					:send_address => ENV['RACK_MONGREL2_SEND'],
-					:uuid => ENV['RACK_MONGREL2_UUID'],
+					:send_address => ENV['RACK_MONGREL2_SEND']
 				}.merge(options)
 
 				raise MissingOptionError.new('recv_address', 'RACK_MONGREL2_RECV') unless options[:recv_address]
 				raise MissingOptionError.new('send_address', 'RACK_MONGREL2_SEND') unless options[:send_address]
-				raise MissingOptionError.new('uuid', 'RACK_MONGREL2_UUID') unless options[:uuid]
 
-				Server.new(options[:recv_address], options[:send_address], options[:uuid], app) do |server|
+				Server.new(options[:recv_address], options[:send_address], app) do |server|
 					if block_given?
 						yield server and server.start
 					else

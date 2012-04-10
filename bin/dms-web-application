@@ -87,7 +87,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		sinatra.get '/query/*' do |tag_set|
 			tag_set = TagSet.new(tag_set)
 			log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-			sinatra.bus.ready!(settings.program_id, settings.hello_wait)
+			sinatra.bus.ready!(settings.program_id, settings.hello_wait, sinatra.poller)
 
 			stream do |out|
 				sinatra.bus.on DataSet, settings.program_id do |data_set|
