@@ -141,19 +141,95 @@ module Rack
 			end
 
 			class Server
+				class Connections < Array
+					class ConnectionCollector
+						def initialize(collector, &outher)
+							@outher = outher
+							@next_stage = nil
+							@collector = collector
+						end
+
+						def chain(&outher)
+							@next_stage = self.new(&outher)
+						end
+
+						def call(*args, &last)
+							@last = last
+							@args = args
+							instance_exec(*args, &@outher)
+						end
+
+						def connection(*args)
+							@collector << args
+							if @next_stage
+								@next_stage.call(*@args, &@last)
+							else
+								@last.call
+							end
+						end
+					end
+
+					def initialize
+						super()
+					end
+
+					attr_reader :connections
+
+					def add(&block)
+						unless @last_nest
+							@last_nest = ConnectionCollector.new(self, &block)
+						else
+							@last_nest = @last_nest.chain(&block)
+						end
+					end
+
+					def connect(zmq, poller, &block)
+						if not @last_nest
+							return block.call
+						end
+
+						@last_nest.call(zmq, poller, &block)
+					end
+				end
+
 				def initialize(recv_address, send_address, app)
+					@recv_address = recv_address
+					@send_address = send_address
+					@app = app
+
+					@connections = Connections.new
+					@zmq = nil
+					@poller = ZeroMQ::Poller.new
+				end
+
+				attr_reader :zmq
+				attr_reader :poller
+
+				def zeromq(&block)
+					@connections.add(&block)
+				end
+
+				def start
+					log.info 'starting Rack handler'
 					ZeroMQ.new do |zmq|
 						@zmq = zmq
-						@poller = ZeroMQ::Poller.new
-
-						zmq.pull_connect(recv_address) do |pull|
-							zmq.pub_connect(send_address) do |pub|
+						zmq.pull_connect(@recv_address) do |pull|
+							zmq.pub_connect(@send_address) do |pub|
 								pull.on_raw do |msg|
 									log.debug "got Mongrel2 request: #{msg}"
 									request = Request.parse(msg)
-									log.debug request.inspect
 
-									status, headers, response = app.call(request.env)
+									env = {
+										zmq: @zmq,
+										poller: @poller
+									}
+									# add all requested zmq connections
+									@connections.each do |name, connection|
+										env[name] = connection
+									end
+									env.merge!(request.env)
+
+									status, headers, response = @app.call(env)
 
 									begin
 										pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
@@ -168,22 +244,18 @@ module Rack
 								end
 
 								@poller << pull
-								yield self
+								@connections.connect(zmq, @poller) do
+									log.debug "polling"
+									@poller.poll!
+								end
 							end
 						end
 					end
 				end
 
-				attr_reader :zmq
-				attr_reader :poller
-
-				def start
-					log.info 'starting Rack handler'
-					@poller.poll!
-				end
-
 				def stop
 					log.info 'stopping Rack handler'
+					@zmq = nil
 				end
 			end
 
@@ -196,13 +268,9 @@ module Rack
 				raise MissingOptionError.new('recv_address', 'RACK_MONGREL2_RECV') unless options[:recv_address]
 				raise MissingOptionError.new('send_address', 'RACK_MONGREL2_SEND') unless options[:send_address]
 
-				Server.new(options[:recv_address], options[:send_address], app) do |server|
-					if block_given?
-						yield server and server.start
-					else
-						server.start
-					end
-				end
+				server = Server.new(options[:recv_address], options[:send_address], app)
+				yield server if block_given?
+				server.start
 			end
 		end
 	end

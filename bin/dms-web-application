@@ -72,6 +72,16 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		sinatra.set :lock, true
 		sinatra.set :logging, true
 
+		sinatra.helpers do
+			def bus
+				env[:bus]
+			end
+
+			def poller
+				env[:poller]
+			end
+		end
+
 		sinatra.before do
 			# use core logger
 			logging_class_name settings.program_class_name
@@ -81,24 +91,25 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		sinatra.get '/' do
 			log.info 'hello1'
 			logger.info 'hello2'
+			log.debug env
 			'hello'
 		end
 
 		sinatra.get '/query/*' do |tag_set|
 			tag_set = TagSet.new(tag_set)
 			log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-			sinatra.bus.ready!(settings.program_id, settings.hello_wait, sinatra.poller)
+			bus.ready!(settings.program_id, settings.hello_wait, poller)
 
 			stream do |out|
-				sinatra.bus.on DataSet, settings.program_id do |data_set|
+				bus.on DataSet, settings.program_id do |data_set|
 					log.info "#{data_set}"
 					out << data_set
 				end
 
 				query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
-				sinatra.bus.send query, topic: settings.program_id
+				bus.send query, topic: settings.program_id
 
-				sinatra.poller.poll! 10
+				poller.poll! 10
 			end
 		end
 
@@ -109,16 +120,13 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		main_loop do
 			ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
 			ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
-			ENV['RACK_MONGREL2_UUID'] = settings.program_id
 			sinatra.run! do |server|
-				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
-				server.zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
-					server.poller << bus
-					sinatra.set :zmq, server.zmq
-					sinatra.set :poller, server.poller
-					sinatra.set :bus, bus
-					server.start
-					false
+				server.zeromq do |zmq, poller|
+					log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
+					zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
+						poller << bus
+						connection :bus, bus
+					end
 				end
 			end
 		end
