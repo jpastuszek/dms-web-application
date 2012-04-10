@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-#
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'cli'
@@ -29,6 +28,9 @@ VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
 Program::Daemon.new('DMS Console Connector', VERSION) do
 	cli do
 		description 'DMS Web UI Application'
+
+		internal_console_connection
+		hello_wait
 
 		switch :no_bind, 
 			description: "Do not bind to TCP socket - useful with -s fastcgi option"
@@ -44,20 +46,16 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 			description: "HTTP server TCP port"
 		option :server,
 			short: :s,
-			default: 'Mongrel2',
+			default: 'Mongrel2BuiltIn',
 			description: "Rack server handler like thin, mongrel, webrick, fastcgi etc."
 		option :mongrel_recv_address,
 			short: :m,
-			default: 'tcp://127.0.0.1:12100',
+			default: 'tcp://127.0.0.1:12300',
 			description: "Mongrel2 SUB socket address (recv_spec)"
 		option :mongrel_send_address,
 			short: :M,
-			default: 'tcp://127.0.0.1:12101',
+			default: 'tcp://127.0.0.1:12301',
 			description: "Mongrel2 PUSH socket address (send_spec)"
-		option :chroot,
-			short: :c,
-			default: '.',
-			description: "When using Mongrel2 chroot to given directory"
 	end
 
 	main do |settings|
@@ -76,14 +74,6 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 		sinatra.set :lock, true
 		sinatra.set :logging, true
 
-		# no way to pass options to Rack hanler other than using ENV
-		ENV['RACK_MONGREL2_UUID'] = settings.program_id
-		ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
-		ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
-		ENV['RACK_MONGREL2_CHROOT'] = settings.chroot
-
-		require 'rack/handler/mongrel2'
-
 		sinatra.before do
 			# use core logger
 			logging_class_name settings.program_class_name
@@ -96,8 +86,41 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 			'hello'
 		end
 
+		sinatra.get '/query/*' do |tag_set|
+			tag_set = TagSet.new(tag_set)
+			#log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
+			#sinatra.bus.ready!(settings.program_id, settings.hello_wait)
+
+			# non blocking stream
+			#stream(:keep_open) do |out|
+				#EventMachine::PeriodicTimer.new(1) { out << "#{Time.now}\n" }
+				#EventMachine::PeriodicTimer.new(3) { out.close }
+			#end
+
+			# blocking stream
+			stream do |out|
+				30.times { out << "#{Time.now}\n"; sleep 0.2 }
+			end
+		end
+
+		sinatra.error BusDetector::NoBusError do
+			halt 408, 'BusDetector::NoBusError - no discovery response received'
+		end
+
 		main_loop do
-			sinatra.run!
+			#ZeroMQ.new do |zmq|
+				#poller = ZeroMQ::Poller.new
+				#log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
+				#zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
+					#sinatra.set :bus, bus
+					#sinatra.set :poller, poller
+
+					ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
+					ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
+					ENV['RACK_MONGREL2_UUID'] = settings.program_id
+					sinatra.run!
+				#end
+			#end
 		end
 	end
 end

@@ -1,11 +1,12 @@
 source "http://rubygems.org"
 
-gem "em-rack-mongrel2", ">= 0.2.0"
 gem "dms-core", :path => "../dms-core"
 gem "cli", "~> 1.1.1"
 gem "ruby-ip", "~> 0.9"
 gem "sinatra", ">= 1.2.6"
 gem "facter", "~> 1.6.5"
+gem "tnetstring", "~> 0.3.4"
+gem "multi_json", "~> 1.2.0"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
