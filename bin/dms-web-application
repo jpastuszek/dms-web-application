@@ -117,16 +117,38 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			halt 408, 'BusDetector::NoBusError - no discovery response received'
 		end
 
+		class RackConfig
+			def initialize(app, &block)
+				@app = app
+				@block = block
+			end
+
+			def call(env)
+				@block.call(env)
+				@app.call(env)
+			end
+		end		
+
 		main_loop do
 			ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
 			ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
-			sinatra.run! do |server|
-				server.zeromq do |zmq, poller|
-					log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
-					zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
-						poller << bus
-						connection :bus, bus
+
+			ZeroMQ.new do |zmq|
+				poller = ZeroMQ::Poller.new
+				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
+				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
+					poller << bus
+
+					$rack_zeromq = zmq
+					$rack_poller = poller
+
+					sinatra.use RackConfig do |env|
+						env[:zmq] = zmq
+						env[:bus] = bus
+						env[:poller] = poller
 					end
+			
+					sinatra.run!
 				end
 			end
 		end
