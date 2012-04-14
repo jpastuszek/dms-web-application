@@ -89,9 +89,6 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		end
 
 		sinatra.get '/' do
-			log.info 'hello1'
-			logger.info 'hello2'
-			log.debug env
 			'hello'
 		end
 
@@ -130,27 +127,21 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		end		
 
 		main_loop do
+			ZeroMQService.socket(:bus) do |zmq|
+				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
+				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0})
+			end
+
+			sinatra.use RackConfig do |env|
+				env[:bus] = ZeroMQService.socket(:bus)
+				env[:poller] = ZeroMQService.poller
+			end
+			
+			# for Mongrel2 based server
 			ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
 			ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
 
-			ZeroMQ.new do |zmq|
-				poller = ZeroMQ::Poller.new
-				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
-				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0}) do |bus|
-					poller << bus
-
-					$rack_zeromq = zmq
-					$rack_poller = poller
-
-					sinatra.use RackConfig do |env|
-						env[:zmq] = zmq
-						env[:bus] = bus
-						env[:poller] = poller
-					end
-			
-					sinatra.run!
-				end
-			end
+			sinatra.run!
 		end
 	end
 end

@@ -136,62 +136,11 @@ module Rack
 				end
 
 				def to_string
-					p "#{@uuid} #{TNetstring.dump(@conn_id.join(' '))} #{@data}"
+					"#{@uuid} #{TNetstring.dump(@conn_id.join(' '))} #{@data}"
 				end
 			end
 
 			class Server
-				class Connections < Array
-					class ConnectionCollector
-						def initialize(collector, &outher)
-							@outher = outher
-							@next_stage = nil
-							@collector = collector
-						end
-
-						def chain(&outher)
-							@next_stage = self.new(&outher)
-						end
-
-						def call(*args, &last)
-							@last = last
-							@args = args
-							instance_exec(*args, &@outher)
-						end
-
-						def connection(*args)
-							@collector << args
-							if @next_stage
-								@next_stage.call(*@args, &@last)
-							else
-								@last.call
-							end
-						end
-					end
-
-					def initialize
-						super()
-					end
-
-					attr_reader :connections
-
-					def add(&block)
-						unless @last_nest
-							@last_nest = ConnectionCollector.new(self, &block)
-						else
-							@last_nest = @last_nest.chain(&block)
-						end
-					end
-
-					def connect(zmq, poller, &block)
-						if not @last_nest
-							return block.call
-						end
-
-						@last_nest.call(zmq, poller, &block)
-					end
-				end
-
 				def initialize(recv_address, send_address, zeromq, poller, app)
 					@recv_address = recv_address
 					@send_address = send_address
@@ -234,7 +183,6 @@ module Rack
 			end
 
 			def self.run(app, options = {})
-				p options
 				options = {
 					:recv_address => ENV['RACK_MONGREL2_RECV'],
 					:send_address => ENV['RACK_MONGREL2_SEND'],
@@ -243,7 +191,7 @@ module Rack
 				raise MissingOptionError.new('recv_address', 'RACK_MONGREL2_RECV') unless options[:recv_address]
 				raise MissingOptionError.new('send_address', 'RACK_MONGREL2_SEND') unless options[:send_address]
 
-				server = Server.new(options[:recv_address], options[:send_address], $rack_zeromq, $rack_poller, app)
+				server = Server.new(options[:recv_address], options[:send_address], ZeroMQService.zeromq, ZeroMQService.poller, app)
 				yield server if block_given?
 				server.start
 			end
