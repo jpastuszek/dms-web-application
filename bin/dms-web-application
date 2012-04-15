@@ -30,22 +30,6 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		internal_console_connection
 		hello_wait
 
-		switch :no_bind, 
-			description: "Do not bind to TCP socket - useful with -s fastcgi option"
-		option :bind, 
-			short: :b,
-			default: IP.new('127.0.0.1'),
-			cast: IP,
-			description: "HTTP server bind address - use 0.0.0.0 to bind to all interfaces"
-		option :port,
-			short: :p,
-			default: 3100,
-			cast: Integer,
-			description: "HTTP server TCP port"
-		option :server,
-			short: :s,
-			default: 'Mongrel2BuiltIn',
-			description: "Rack server handler like thin, mongrel, webrick, fastcgi etc."
 		option :mongrel_recv_address,
 			short: :m,
 			default: 'tcp://127.0.0.1:12300',
@@ -78,7 +62,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				end
 			end
 
-			on 'test' do
+			on 'error' do
 				raise BusDetector::NoBusError
 			end
 
