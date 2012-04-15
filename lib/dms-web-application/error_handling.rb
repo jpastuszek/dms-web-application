@@ -15,13 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-module ConsoleBus
-	def bus
-		ZeroMQService.socket(:bus)
+class ErrorHandling
+	class ErrorReporter < Cuba; end
+	def initialize(app, &block)
+		@app = app
+		@handler = ErrorReporter.define do
+			on default do
+				res.status = 500
+				res.write "error: #{env[:error]}"
+			end
+
+			instance_eval &block if block
+		end
 	end
 
-	def poller
-		ZeroMQService.poller
+	def call(env)
+		begin
+			@app.call(env)
+		rescue => e
+			env[:error] = e
+			@handler.call(env)
+		end
 	end
-end		
+end
 

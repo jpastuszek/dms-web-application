@@ -67,14 +67,11 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 			on 'stream' do
 				stream do |res|
-					log.debug 1
 					200.times do |time|
 						res.write time
 						sleep 0.1
 					end
-					log.debug 2
 				end
-				p res
 			end
 
 			on 'query/:tag_set' do |tag_set|
@@ -100,15 +97,16 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			#halt 408, 'BusDetector::NoBusError - no discovery response received'
 		#end
 
+		Cuba.use CoreLogger
+		Cuba.use ErrorHandling
+		Cuba.plugin Streaming
+		Cuba.plugin ConsoleBus
+
 		main_loop do
 			ZeroMQService.socket(:bus) do |zmq|
 				log.debug "internal console subscriber: #{settings.internal_console_subscriber}, publisher: #{settings.internal_console_publisher}"
 				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0})
 			end
-
-			Cuba.use CoreLogger
-			Cuba.use ConsoleBus
-			Cuba.plugin Streaming
 
 			Rack::Handler::Mongrel2BuiltIn.run Cuba, recv_address: settings.mongrel_recv_address, send_address: settings.mongrel_send_address
 		end

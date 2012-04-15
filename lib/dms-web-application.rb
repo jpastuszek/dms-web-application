@@ -20,4 +20,5 @@ require 'dms-web-application/rack'
 require 'dms-web-application/streaming'
 require 'dms-web-application/core_logger'
 require 'dms-web-application/console_bus'
+require 'dms-web-application/error_handling'
 
