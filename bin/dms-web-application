@@ -57,6 +57,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 	end
 
 	main do |settings|
+		Cuba.use CoreLogger
+		Cuba.plugin Streaming
+		Cuba.plugin ConsoleBus
+
 		Cuba.define do
 			logging_class_name settings.program_class_name
 
@@ -72,6 +76,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						sleep 0.1
 					end
 				end
+			end
+
+			on 'test' do
+				raise BusDetector::NoBusError
 			end
 
 			on 'query/:tag_set' do |tag_set|
@@ -93,14 +101,12 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			end
 		end
 
-		#sinatra.error BusDetector::NoBusError do
-			#halt 408, 'BusDetector::NoBusError - no discovery response received'
-		#end
-
-		Cuba.use CoreLogger
-		Cuba.use ErrorHandling
-		Cuba.plugin Streaming
-		Cuba.plugin ConsoleBus
+		Cuba.use ErrorHandling do
+			on error BusDetector::NoBusError do
+				res.status = 408
+				res.write 'BusDetector::NoBusError - no discovery response received'
+			end
+		end
 
 		main_loop do
 			ZeroMQService.socket(:bus) do |zmq|

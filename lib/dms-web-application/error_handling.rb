@@ -20,12 +20,16 @@ class ErrorHandling
 	def initialize(app, &block)
 		@app = app
 		@handler = ErrorReporter.define do
-			on default do
-				res.status = 500
-				res.write "error: #{env[:error]}"
+			def error(klass)
+				env["EXCEPTION"].is_a? klass
 			end
 
 			instance_eval &block if block
+
+			on default do
+				res.status = 500
+				res.write "error: #{env["EXCEPTION"]}"
+			end
 		end
 	end
 
@@ -33,7 +37,8 @@ class ErrorHandling
 		begin
 			@app.call(env)
 		rescue => e
-			env[:error] = e
+			env["EXCEPTION"] = e
+			log.error "Error while processing request: #{env["PATH_INFO"]}", e
 			@handler.call(env)
 		end
 	end
