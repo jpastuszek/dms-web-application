@@ -21,6 +21,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'cli'
 require 'ip'
 require 'cuba'
+require "cuba/render"
 require 'dms-web-application'
 
 VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
@@ -42,15 +43,16 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 	main do |settings|
 		Cuba.use CoreLogger
+		Cuba.plugin Cuba::Render
 		Cuba.plugin Streaming
 		Cuba.plugin ConsoleBus
+		Cuba.plugin Bootstrap
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
 
 			on root do
-				log.info 'hello'
-				res.write "hello\n"
+				res.write render("views/layout.haml")
 			end
 
 			on 'stream' do
@@ -82,6 +84,11 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 					poller.poll! 10
 				end
+			end
+
+			on 'bootstrap/:dir/:file' do |dir, file|
+				env["PATH_INFO"] = (Pathname.new(dir) + file).to_s
+				run Rack::File.new(bootstrap_root)
 			end
 		end
 

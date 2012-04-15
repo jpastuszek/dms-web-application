@@ -14,12 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
+#
 
-require 'dms-core'
-require 'dms-web-application/rack'
-require 'dms-web-application/streaming'
-require 'dms-web-application/core_logger'
-require 'dms-web-application/console_bus'
-require 'dms-web-application/error_handling'
-require 'dms-web-application/bootstrap'
+module Bootstrap
+	def bootstrap_root
+		Pathname.new('views') + 'bootstrap'
+	end
+end
 

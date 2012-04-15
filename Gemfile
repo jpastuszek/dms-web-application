@@ -10,6 +10,7 @@ gem "multi_json", "~> 1.2.0"
 gem "cuba", "~> 3.0"
 gem "less", "~> 2.1"
 gem "haml", "~> 2.1"
+gem "tilt", "~> 1.3"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

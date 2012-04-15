@@ -64,6 +64,7 @@ GEM
     term-ansicolor (1.0.7)
     therubyracer (0.10.1)
       libv8 (~> 3.3.10)
+    tilt (1.3.3)
     tnetstring (0.3.4)
 
 PLATFORMS
@@ -84,4 +85,5 @@ DEPENDENCIES
   rspec (~> 2.8.0)
   ruby-ip (~> 0.9)
   simplecov
+  tilt (~> 1.3)
   tnetstring (~> 0.3.4)
