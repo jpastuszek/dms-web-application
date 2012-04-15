@@ -14,10 +14,31 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
+#
+module Streaming
+	class Stream < Cuba::Response
+		def initialize(status = 200, headers = { "Content-Type" => "text/html; charset=utf-8" }, &app)
+			super
+			@app = app
+		end
 
-require 'dms-core'
-require 'dms-web-application/rack'
-require 'dms-web-application/streaming'
-require 'dms-web-application/core_logger'
-require 'dms-web-application/console_bus'
+		def each(&server)
+			p 'each'
+			@server = server
+			@app.call(self)
+		end
+
+		def write(str)
+			@server.call(str)
+		end
+
+		def finish
+			[@status, @headers, self]
+		end
+	end
+
+	def stream(&app)
+		@res = Stream.new(&app)
+	end
+end
 

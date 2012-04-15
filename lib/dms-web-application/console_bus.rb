@@ -14,10 +14,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
+#
+class ConsoleBus
+	def initialize(app, &block)
+		@app = app
+	end
 
-require 'dms-core'
-require 'dms-web-application/rack'
-require 'dms-web-application/streaming'
-require 'dms-web-application/core_logger'
-require 'dms-web-application/console_bus'
+	def call(env)
+		env[:bus] = ZeroMQService.socket(:bus)
+		env[:poller] = ZeroMQService.poller
+		@app.call(env)
+	end
+end		
 

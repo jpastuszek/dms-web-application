@@ -20,7 +20,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'cli'
 require 'ip'
-require 'sinatra/base'
+require 'cuba'
 require 'dms-web-application'
 
 VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
@@ -57,74 +57,48 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 	end
 
 	main do |settings|
-		sinatra = Sinatra.new
-
-		unless settings.no_bind
-			sinatra.set :port, settings.port
-			sinatra.set :bind, settings.bind.to_s
-		else
-			sinatra.set :port, nil
-			sinatra.set :bind, nil
-		end
-
-		sinatra.set :environment, 'production'
-		sinatra.set :server, settings.server
-		sinatra.set :lock, true
-		sinatra.set :logging, true
-
-		sinatra.helpers do
-			def bus
-				env[:bus]
-			end
-
-			def poller
-				env[:poller]
-			end
-		end
-
-		sinatra.before do
-			# use core logger
+		Cuba.define do
 			logging_class_name settings.program_class_name
-			env['rack.logger'] = log
-		end
 
-		sinatra.get '/' do
-			'hello'
-		end
+			on root do
+				log.info 'hello'
+				res.write "hello\n"
+			end
 
-		sinatra.get '/query/*' do |tag_set|
-			tag_set = TagSet.new(tag_set)
-			log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-			bus.ready!(settings.program_id, settings.hello_wait, poller)
-
-			stream do |out|
-				bus.on DataSet, settings.program_id do |data_set|
-					log.info "#{data_set}"
-					out << data_set
+			on 'stream' do
+				stream do |res|
+					log.debug 1
+					200.times do |time|
+						res.write time
+						sleep 0.1
+					end
+					log.debug 2
 				end
+				p res
+			end
 
-				query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
-				bus.send query, topic: settings.program_id
+			on 'query/:tag_set' do |tag_set|
+				tag_set = TagSet.new(tag_set)
+				log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
+				bus.ready!(settings.program_id, settings.hello_wait, poller)
 
-				poller.poll! 10
+				stream do |out|
+					bus.on DataSet, settings.program_id do |data_set|
+						log.info "#{data_set}"
+						out << data_set
+					end
+
+					query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
+					bus.send query, topic: settings.program_id
+
+					poller.poll! 10
+				end
 			end
 		end
 
-		sinatra.error BusDetector::NoBusError do
-			halt 408, 'BusDetector::NoBusError - no discovery response received'
-		end
-
-		class RackConfig
-			def initialize(app, &block)
-				@app = app
-				@block = block
-			end
-
-			def call(env)
-				@block.call(env)
-				@app.call(env)
-			end
-		end		
+		#sinatra.error BusDetector::NoBusError do
+			#halt 408, 'BusDetector::NoBusError - no discovery response received'
+		#end
 
 		main_loop do
 			ZeroMQService.socket(:bus) do |zmq|
@@ -132,16 +106,11 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0})
 			end
 
-			sinatra.use RackConfig do |env|
-				env[:bus] = ZeroMQService.socket(:bus)
-				env[:poller] = ZeroMQService.poller
-			end
-			
-			# for Mongrel2 based server
-			ENV['RACK_MONGREL2_RECV'] = settings.mongrel_recv_address
-			ENV['RACK_MONGREL2_SEND'] = settings.mongrel_send_address
+			Cuba.use CoreLogger
+			Cuba.use ConsoleBus
+			Cuba.plugin Streaming
 
-			sinatra.run!
+			Rack::Handler::Mongrel2BuiltIn.run Cuba, recv_address: settings.mongrel_recv_address, send_address: settings.mongrel_send_address
 		end
 	end
 end

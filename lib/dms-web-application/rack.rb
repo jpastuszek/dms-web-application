@@ -160,12 +160,16 @@ module Rack
 								status, headers, response = @app.call(request.env)
 
 								begin
+									log.debug "sending header: #{headers}"
 									pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
+									p response
 
 									response.each do |body|
+										log.debug "sending body: #{body}"
 										pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
 									end
 								ensure
+									log.debug "sending done"
 									pub.send_raw Response.close(request.uuid, request.conn_id).to_string
 									response.close if response.respond_to? :close
 								end
