@@ -99,6 +99,11 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				on 'bootstrap' do
 					run Rack::File.new(Pathname.new('views') + 'bootstrap')
 				end
+
+				on '.*' do
+					res.status = 404
+					page '404'
+				end
 			end
 
 			on '.*' do
