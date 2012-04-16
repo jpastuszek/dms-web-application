@@ -162,7 +162,6 @@ module Rack
 								begin
 									log.debug "sending header: #{headers}"
 									pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
-									p response
 
 									response.each do |body|
 										log.debug "sending body: #{body}"

@@ -15,10 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
+class Prefix
+	def initialize(app)
+		@app = app
+	end
 
-module Bootstrap
-	def bootstrap_root
-		Pathname.new('views') + 'bootstrap'
+	def call(env)
+		env['PREFIX'] = env['SCRIPT_NAME']
+		@app.call(env)
 	end
 end
 

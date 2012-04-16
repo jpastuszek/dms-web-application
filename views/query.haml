@@ -1,0 +1,16 @@
+.page-header
+  %h1= page.titlecase
+
+%form.well.form-search{action: relative_uri('submit'), method: 'get'}
+  %input.input-medium.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags'}
+  %button.btn{type: 'submit'}
+    Query
+
+- if defined? tag_sets and not tag_sets.empty?
+  .alert.alert-info
+    Quering for:
+    - tag_sets.each_with_index do |tag_set, no|
+      %strong= tag_set
+      - if no + 1 < tag_sets.length
+        end
+

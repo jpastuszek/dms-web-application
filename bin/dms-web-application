@@ -43,52 +43,67 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 	main do |settings|
 		Cuba.use CoreLogger
+		Cuba.use Prefix
 		Cuba.plugin Cuba::Render
 		Cuba.plugin Streaming
 		Cuba.plugin ConsoleBus
-		Cuba.plugin Bootstrap
+		Cuba.plugin Helpers
+
+		Cuba.settings[:pages] = [
+			'dashboard',
+			'query'
+		]
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
 
-			on root do
-				res.write render("views/layout.haml")
-			end
+			on get do
+				on root do
+					go_to 'dashboard'
+				end
 
-			on 'stream' do
-				stream do |res|
-					200.times do |time|
-						res.write time
-						sleep 0.1
+				on 'dashboard' do
+					page 'dashboard'
+				end
+
+				on 'query' do
+					# handle form submit
+					on 'submit', param('tag_set') do |tag_set|
+						go_to 'query', tag_set
 					end
+
+					tag_sets = Rack::Utils.unescape(env['PATH_INFO']).split('/').tap{|t| t.shift}
+					log.info "quering for tag sets: #{tag_sets}"
+					page 'query', tag_sets: tag_sets
+				end
+
+				on 'query/feed/:tag_set' do |tag_set|
+					tag_set = TagSet.new(tag_set)
+					log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
+					bus.ready!(settings.program_id, settings.hello_wait, poller)
+
+					stream do |out|
+						bus.on DataSet, settings.program_id do |data_set|
+							log.info "#{data_set}"
+							out << data_set
+						end
+
+						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
+						bus.send query, topic: settings.program_id
+
+						poller.poll! 10
+					end
+				end
+
+				# serve bootstrap files
+				on 'bootstrap' do
+					run Rack::File.new(Pathname.new('views') + 'bootstrap')
 				end
 			end
 
-			on 'error' do
-				raise BusDetector::NoBusError
-			end
-
-			on 'query/:tag_set' do |tag_set|
-				tag_set = TagSet.new(tag_set)
-				log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-				bus.ready!(settings.program_id, settings.hello_wait, poller)
-
-				stream do |out|
-					bus.on DataSet, settings.program_id do |data_set|
-						log.info "#{data_set}"
-						out << data_set
-					end
-
-					query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
-					bus.send query, topic: settings.program_id
-
-					poller.poll! 10
-				end
-			end
-
-			on 'bootstrap/:dir/:file' do |dir, file|
-				env["PATH_INFO"] = (Pathname.new(dir) + file).to_s
-				run Rack::File.new(bootstrap_root)
+			on '.*' do
+				res.status = 404
+				page '404'
 			end
 		end
 
