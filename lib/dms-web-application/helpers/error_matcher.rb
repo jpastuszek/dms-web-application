@@ -15,28 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-module Rack
-	class ErrorHandling
-		class ErrorReporter < Cuba; end
-		def initialize(app, &block)
-			@app = app
-		end
-
-		def call(env)
-			begin
-				return @app.call(env)
-			rescue => e
-				env["ERROR"] = e
-				log.error "Error while processing request: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
-				begin
-					# call app to handle the error
-					return @app.call(env)
-				rescue => e
-					log.fatal "Error while handling error #{env["ERROR"]}: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
-					raise 
-				end
-			end
-		end
+module ErrorMatcher
+	def error(klass)
+		env["ERROR"].is_a? klass
 	end
 end
 

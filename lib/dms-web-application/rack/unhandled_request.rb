@@ -16,26 +16,21 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 module Rack
-	class ErrorHandling
-		class ErrorReporter < Cuba; end
-		def initialize(app, &block)
+	class UnhandledRequest
+		class UnhandledRequestError < ArgumentError
+			def initialize(uri)
+				super "request for URI '#{uri}' was not handled by the server"
+			end
+		end
+
+		def initialize(app)
 			@app = app
 		end
 
 		def call(env)
-			begin
-				return @app.call(env)
-			rescue => e
-				env["ERROR"] = e
-				log.error "Error while processing request: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
-				begin
-					# call app to handle the error
-					return @app.call(env)
-				rescue => e
-					log.fatal "Error while handling error #{env["ERROR"]}: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
-					raise 
-				end
-			end
+			status, headers, body = @app.call(env)
+			raise UnhandledRequestError, env['SCRIPT_NAME'] + env['PATH_INFO'] if status == 200 and body == []
+			[status, headers, body]
 		end
 	end
 end

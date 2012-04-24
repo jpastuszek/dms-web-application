@@ -44,6 +44,8 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 	main do |settings|
 		Cuba.use Rack::CoreLogger
 		Cuba.use Rack::RootScriptName
+		Cuba.use Rack::ErrorHandling
+		Cuba.use Rack::UnhandledRequest
 
 		Cuba.settings[:template_engine] = 'haml'
 		Cuba.settings[:views] = File.join(File.dirname(__FILE__), '..', 'views')
@@ -57,9 +59,26 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		]
 		Cuba.plugin View
 		Cuba.plugin Navigation
+		Cuba.plugin ErrorMatcher
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
+
+			on error BusDetector::NoBusError do
+				res.status = 408
+				res.write 'BusDetector::NoBusError - no discovery response received'
+			end
+
+			on error Rack::UnhandledRequest::UnhandledRequestError do
+				res.status = 404
+				send_page '404'
+			end
+
+			on error StandardError do
+				log.error "Unhandled error: ", env["ERROR"]
+				res.status = 500
+				send_page '500', :error_class => env["ERROR"].class, :error_message => env["ERROR"].message
+			end
 
 			on get do
 				on root do
@@ -103,23 +122,6 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				on 'bootstrap' do
 					run Rack::File.new(Pathname.new('views') + 'bootstrap')
 				end
-
-				on '.*' do
-					res.status = 404
-					send_page '404'
-				end
-			end
-
-			on '.*' do
-				res.status = 404
-				send_page '404'
-			end
-		end
-
-		Cuba.use Rack::ErrorHandling do
-			on error BusDetector::NoBusError do
-				res.status = 408
-				res.write 'BusDetector::NoBusError - no discovery response received'
 			end
 		end
 
