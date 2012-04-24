@@ -20,7 +20,7 @@ require 'tnetstring'
 
 module Rack
 	module Handler
-		class Mongrel2BuiltIn
+		class DMSMongrel2
 			class MissingOptionError < ArgumentError
 				def initialize(opt_name, env_name)
 					super "must specify an #{opt_name} or ENV variable #{env_name}"

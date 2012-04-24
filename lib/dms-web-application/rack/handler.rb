@@ -15,12 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-require 'dms-core'
-require 'dms-web-application/rack/handler'
-require 'dms-web-application/rack/core_logger'
-require 'dms-web-application/rack/error_handling'
-require 'dms-web-application/rack/root_script_name'
-require 'dms-web-application/helpers/helpers'
-require 'dms-web-application/helpers/streaming'
-require 'dms-web-application/helpers/console_bus'
+module Rack::Handler
+	autoload :DMSMongrel2, 'dms-web-application/rack/handler/dms_mongrel2.rb'
+end
 

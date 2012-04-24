@@ -42,8 +42,8 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 	end
 
 	main do |settings|
-		Cuba.use CoreLogger
-		Cuba.use Prefix
+		Cuba.use Rack::CoreLogger
+		Cuba.use Rack::RootScriptName
 		Cuba.plugin Cuba::Render
 		Cuba.plugin Streaming
 		Cuba.plugin ConsoleBus
@@ -112,7 +112,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			end
 		end
 
-		Cuba.use ErrorHandling do
+		Cuba.use Rack::ErrorHandling do
 			on error BusDetector::NoBusError do
 				res.status = 408
 				res.write 'BusDetector::NoBusError - no discovery response received'
@@ -125,7 +125,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				zmq.bus_connect(settings.internal_console_publisher, settings.internal_console_subscriber, {hwm: 10, linger: 0})
 			end
 
-			Rack::Handler::Mongrel2BuiltIn.run Cuba, recv_address: settings.mongrel_recv_address, send_address: settings.mongrel_send_address
+			Rack::Handler::DMSMongrel2.run Cuba, recv_address: settings.mongrel_recv_address, send_address: settings.mongrel_send_address
 		end
 	end
 end

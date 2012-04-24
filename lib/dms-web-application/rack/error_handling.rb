@@ -15,14 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-class Prefix
-	def initialize(app)
-		@app = app
-	end
+module Rack
+	class ErrorHandling
+		class ErrorReporter < Cuba; end
+		def initialize(app, &block)
+			@app = app
+			@handler = ErrorReporter.define do
+				def error(klass)
+					env["EXCEPTION"].is_a? klass
+				end
 
-	def call(env)
-		env['PREFIX'] = env['SCRIPT_NAME']
-		@app.call(env)
+				instance_eval &block if block
+
+				on default do
+					res.status = 500
+					res.write "error: #{env["EXCEPTION"]}"
+				end
+			end
+		end
+
+		def call(env)
+			begin
+				@app.call(env)
+			rescue => e
+				env["EXCEPTION"] = e
+				log.error "Error while processing request: #{env["PATH_INFO"]}", e
+				@handler.call(env)
+			end
+		end
 	end
 end
 

@@ -15,31 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-class ErrorHandling
-	class ErrorReporter < Cuba; end
-	def initialize(app, &block)
-		@app = app
-		@handler = ErrorReporter.define do
-			def error(klass)
-				env["EXCEPTION"].is_a? klass
-			end
-
-			instance_eval &block if block
-
-			on default do
-				res.status = 500
-				res.write "error: #{env["EXCEPTION"]}"
-			end
+module Rack
+	class CoreLogger
+		def initialize(app)
+			@app = app
 		end
-	end
 
-	def call(env)
-		begin
+		def call(env)
+			env['rack.logger'] = log
 			@app.call(env)
-		rescue => e
-			env["EXCEPTION"] = e
-			log.error "Error while processing request: #{env["PATH_INFO"]}", e
-			@handler.call(env)
 		end
 	end
 end

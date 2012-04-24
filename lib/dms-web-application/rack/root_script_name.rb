@@ -15,46 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-module Helpers
-	def page(name, locals = {})
-		locals = {
-			pages: settings[:pages],
-			page: name,
-			title: name.titlecase
-		}.merge(locals)
-
-		log.debug "rendering page '#{name}' with locals: #{locals}"
-
-		res.write render("views/layout.haml", locals) {
-			render("views/#{name}.haml", locals)
-		}
-	end
-
-	def root_uri(*parts)
-		out = Pathname.new(env['PREFIX'])
-		parts.each do |part|
-			out += part
+module Rack
+	class RootScriptName
+		def initialize(app)
+			@app = app
 		end
-		out.expand_path.to_s
-	end
 
-	def relative_uri(*parts)
-		out = Pathname.new(env['SCRIPT_NAME'])
-		parts.each do |part|
-			out += part
+		def call(env)
+			env['ROOT_SCRIPT_NAME'] = env['SCRIPT_NAME']
+			@app.call(env)
 		end
-		out.expand_path.to_s
-	end
-
-	def go_to(*parts)
-		res.redirect(root_uri(*parts))
-	end
-end
-
-class String
-	def titlecase
-		tr("_", " ").gsub(/(^|\s)([a-z])/) { |char| char.upcase }
 	end
 end
 
