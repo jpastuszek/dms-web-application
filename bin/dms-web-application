@@ -44,15 +44,19 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 	main do |settings|
 		Cuba.use Rack::CoreLogger
 		Cuba.use Rack::RootScriptName
+
+		Cuba.settings[:template_engine] = 'haml'
+		Cuba.settings[:views] = File.join(File.dirname(__FILE__), '..', 'views')
 		Cuba.plugin Cuba::Render
 		Cuba.plugin Streaming
 		Cuba.plugin ConsoleBus
-		Cuba.plugin Helpers
 
 		Cuba.settings[:pages] = [
 			'dashboard',
 			'query'
 		]
+		Cuba.plugin View
+		Cuba.plugin Navigation
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
@@ -63,7 +67,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				end
 
 				on 'dashboard' do
-					page 'dashboard'
+					send_page 'dashboard'
 				end
 
 				on 'query' do
@@ -74,7 +78,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 					tag_sets = Rack::Utils.unescape(env['PATH_INFO']).split('/').tap{|t| t.shift}
 					log.info "quering for tag sets: #{tag_sets}"
-					page 'query', tag_sets: tag_sets
+					send_page 'query', tag_sets: tag_sets
 				end
 
 				on 'query/feed/:tag_set' do |tag_set|
@@ -102,13 +106,13 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 				on '.*' do
 					res.status = 404
-					page '404'
+					send_page '404'
 				end
 			end
 
 			on '.*' do
 				res.status = 404
-				page '404'
+				send_page '404'
 			end
 		end
 

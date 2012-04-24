@@ -15,13 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-require 'dms-core'
-require 'dms-web-application/rack/handler'
-require 'dms-web-application/rack/core_logger'
-require 'dms-web-application/rack/error_handling'
-require 'dms-web-application/rack/root_script_name'
-require 'dms-web-application/helpers/view'
-require 'dms-web-application/helpers/navigation'
-require 'dms-web-application/helpers/streaming'
-require 'dms-web-application/helpers/console_bus'
+module Navigation
+	def root_uri(*parts)
+		out = Pathname.new(env['ROOT_SCRIPT_NAME'])
+		parts.each do |part|
+			out += part
+		end
+		out.expand_path.to_s
+	end
+
+	def relative_uri(*parts)
+		out = Pathname.new(env['SCRIPT_NAME'])
+		parts.each do |part|
+			out += part
+		end
+		out.expand_path.to_s
+	end
+
+	def go_to(*parts)
+		res.redirect(root_uri(*parts))
+	end
+end
 

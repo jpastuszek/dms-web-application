@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-module Helpers
-	def page(name, locals = {})
+module View
+	def send_page(name, locals = {}, layout = 'layout')
 		locals = {
 			pages: settings[:pages],
 			page: name,
@@ -26,29 +25,7 @@ module Helpers
 
 		log.debug "rendering page '#{name}' with locals: #{locals}"
 
-		res.write render("views/layout.haml", locals) {
-			render("views/#{name}.haml", locals)
-		}
-	end
-
-	def root_uri(*parts)
-		out = Pathname.new(env['ROOT_SCRIPT_NAME'])
-		parts.each do |part|
-			out += part
-		end
-		out.expand_path.to_s
-	end
-
-	def relative_uri(*parts)
-		out = Pathname.new(env['SCRIPT_NAME'])
-		parts.each do |part|
-			out += part
-		end
-		out.expand_path.to_s
-	end
-
-	def go_to(*parts)
-		res.redirect(root_uri(*parts))
+		res.write view(name, locals, layout)
 	end
 end
 
