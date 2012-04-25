@@ -19,13 +19,17 @@ module View
 	def send_page(name, locals = {}, layout = 'layout')
 		locals = {
 			pages: settings[:pages],
-			page: name,
+			page: curren_page,
 			title: name.titlecase
 		}.merge(locals)
 
 		log.debug "rendering page '#{name}' with locals: #{locals}"
 
 		res.write view(name, locals, layout)
+	end
+
+	def curren_page
+		uri[root_uri.length..-1].split('/')[1]
 	end
 end
 

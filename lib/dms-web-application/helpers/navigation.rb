@@ -32,6 +32,10 @@ module Navigation
 		out.expand_path.to_s
 	end
 
+	def uri
+		env['SCRIPT_NAME'] + env['PATH_INFO']
+	end
+
 	def go_to(*parts)
 		res.redirect(root_uri(*parts))
 	end
