@@ -43,6 +43,12 @@ module Rack
 					@conn_id = conn_id
 					@path = path
 					@body = body
+					@headers = headers
+
+					if json?
+						@body = MultiJson.decode(body)
+						return
+					end
 
 					script_name = headers.delete('PATTERN').scan(/.*(?=\/\(?)/).first
 					@env = {
@@ -65,6 +71,14 @@ module Rack
 						headers.each_pair do |key, value|
 							@env["HTTP_" + key.upcase.gsub('-', '_')] = value
 						end
+				end
+
+				def json?
+					@headers['METHOD'] == 'JSON'
+				end
+
+				def disconnect?
+					@body.is_a? Hash and @body['type'] == 'disconnect'
 				end
 
 				attr_reader :uuid
@@ -113,6 +127,10 @@ module Rack
 							pull.on_raw do |msg|
 								log.debug "got Mongrel2 request: #{msg}"
 								request = Request.parse(msg)
+								if request.disconnect?
+									log.debug "client connection lost"
+									next
+								end
 
 								status, headers, response = @app.call(request.env)
 

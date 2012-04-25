@@ -66,8 +66,8 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			logging_class_name settings.program_class_name
 
 			on error BusDetector::NoBusError do
-				res.status = 408
-				res.write 'BusDetector::NoBusError - no discovery response received'
+				res.status = 504
+				send_page 'no_bus_error'
 			end
 
 			on error Rack::UnhandledRequest::UnhandledRequestError do
@@ -97,15 +97,18 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 
 					tag_sets = Rack::Utils.unescape(env['PATH_INFO']).split('/').tap{|t| t.shift}
-					log.info "quering for tag sets: #{tag_sets}"
-					send_page 'query', tag_sets: tag_sets
+					if tag_sets.empty?
+						send_page 'query'
+					else
+						log.info "quering for tag sets: #{tag_sets}"
+						log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
+						bus.ready!(settings.program_id, settings.hello_wait, poller)
+						send_page 'query', tag_sets: tag_sets
+					end
 				end
 
 				on 'feed/query/:tag_set' do |tag_set|
 					tag_set = TagSet.new(tag_set)
-					log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-					bus.ready!(settings.program_id, settings.hello_wait, poller)
-
 					stream do |out|
 						bus.on DataSet, settings.program_id do |data_set|
 							log.info "#{data_set}"
