@@ -20,16 +20,27 @@ module Streaming
 		def initialize(status = 200, headers = { "Content-Type" => "text/html; charset=utf-8" }, &app)
 			super
 			@app = app
+			@callbacks = []
 		end
 
 		def each(&server)
-			p 'each'
 			@server = server
 			@app.call(self)
 		end
 
 		def write(str)
 			@server.call(str)
+		end
+
+		def callback(&callback)
+			@callbacks << callback
+		end
+
+		def close
+			@callbacks.each do |callback|
+				callback.call 
+			end
+			@callbacks.clear
 		end
 
 		def finish

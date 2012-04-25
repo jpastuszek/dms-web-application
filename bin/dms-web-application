@@ -109,16 +109,19 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 				on 'feed/query/:tag_set' do |tag_set|
 					tag_set = TagSet.new(tag_set)
-					stream do |out|
-						bus.on DataSet, settings.program_id do |data_set|
-							log.info "#{data_set}"
-							out << data_set
-						end
-
+					stream do |res|
 						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
 						bus.send query, topic: settings.program_id
 
-						poller.poll! 10
+						handler = bus.on DataSet, settings.program_id do |data_set|
+							log.info "got DataSet: #{data_set}"
+							res.write data_set
+						end
+
+						poller.after(4) do
+							#handler.close
+							res.close
+						end
 					end
 				end
 

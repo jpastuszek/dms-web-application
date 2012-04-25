@@ -143,9 +143,16 @@ module Rack
 										pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
 									end
 								ensure
-									log.debug "sending done"
-									pub.send_raw Response.close(request.uuid, request.conn_id).to_string
-									response.close if response.respond_to? :close
+									if response.respond_to? :callback
+										response.callback do
+											log.debug "sending done"
+											pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+										end
+									else
+										log.debug "sending done"
+										pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+										response.close if response.respond_to? :close
+									end
 								end
 							end
 
