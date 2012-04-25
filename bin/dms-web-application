@@ -60,6 +60,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		Cuba.plugin View
 		Cuba.plugin Navigation
 		Cuba.plugin ErrorMatcher
+		Cuba.plugin EmptyParamMatcher
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
@@ -91,7 +92,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 				on 'query' do
 					# handle form submit
-					on 'submit', param('tag_set') do |tag_set|
+					on 'submit', param!('tag_set') do |tag_set|
 						go_to 'query', tag_set
 					end
 
@@ -100,7 +101,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					send_page 'query', tag_sets: tag_sets
 				end
 
-				on 'query/feed/:tag_set' do |tag_set|
+				on 'feed/query/:tag_set' do |tag_set|
 					tag_set = TagSet.new(tag_set)
 					log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
 					bus.ready!(settings.program_id, settings.hello_wait, poller)

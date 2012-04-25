@@ -23,16 +23,23 @@ module Rack
 		end
 
 		def call(env)
+			# save original env
+			orig_env = env.dup
 			begin
 				return @app.call(env)
-			rescue => e
-				env["ERROR"] = e
-				log.error "Error while processing request: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
+			rescue => error
+				log.error "Error while processing request: #{env['SCRIPT_NAME']}[#{env["PATH_INFO"]}]", error
 				begin
-					# call app to handle the error
+					# reset env to original since it could have been changed
+					env.clear
+					env.merge!(orig_env)
+
+					# set error so app can handle it
+					env["ERROR"] = error
+
 					return @app.call(env)
-				rescue => e
-					log.fatal "Error while handling error #{env["ERROR"]}: #{env['SCRIPT_NAME'] + env["PATH_INFO"]}", e
+				rescue => fatal
+					log.fatal "Error while handling error #{env["ERROR"]}: #{env['SCRIPT_NAME']}[#{env["PATH_INFO"]}]", fatal
 					raise 
 				end
 			end

@@ -15,16 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-require 'dms-core'
-require 'dms-web-application/rack/handler'
-require 'dms-web-application/rack/core_logger'
-require 'dms-web-application/rack/error_handling'
-require 'dms-web-application/rack/unhandled_request'
-require 'dms-web-application/rack/root_script_name'
-require 'dms-web-application/helpers/view'
-require 'dms-web-application/helpers/navigation'
-require 'dms-web-application/helpers/streaming'
-require 'dms-web-application/helpers/console_bus'
-require 'dms-web-application/helpers/error_matcher'
-require 'dms-web-application/helpers/empty_param_matcher'
+module EmptyParamMatcher
+	def param!(key)
+		lambda { captures << req[key] if req[key] }
+	end
+end
 
