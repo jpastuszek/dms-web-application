@@ -64,6 +64,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		Cuba.plugin Navigation
 		Cuba.plugin ErrorMatcher
 		Cuba.plugin EmptyParamMatcher
+		Cuba.plugin OptionalParamMatcher
 
 		Cuba.define do
 			logging_class_name settings.program_class_name
@@ -108,8 +109,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 				end
 
-				on 'feed/query/:tag_set' do |tag_set|
+				on 'feed/query/:tag_set', param?(:time_out, 10) do |tag_set, time_out|
 					tag_set = TagSet.new(tag_set)
+					log.debug "feed for query: #{tag_set} (time out: #{time_out})"
+
 					res.stream do
 						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
 						bus.send query, topic: request_id
@@ -119,7 +122,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 							res.write data_set
 						end
 
-						poller.after(4) do
+						poller.after(time_out.to_i) do
 							#bus.deregister_on DataSet, request_id
 							res.close
 						end
