@@ -101,8 +101,6 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						send_page 'query'
 					else
 						log.info "quering for tag sets: #{tag_sets}"
-						log.debug "wiating #{settings.hello_wait} seconds for Hello message..."
-						bus.ready!(settings.program_id, settings.hello_wait, poller)
 						send_page 'query', tag_sets: tag_sets
 					end
 				end
