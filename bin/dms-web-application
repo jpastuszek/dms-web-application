@@ -53,6 +53,9 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 		Cuba.plugin Streaming
 		Cuba.plugin ConsoleBus
 
+		Cuba.settings[:program_id] = settings.program_id
+		Cuba.plugin RequestID
+
 		Cuba.settings[:pages] = [
 			'dashboard',
 			'query'
@@ -109,15 +112,15 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					tag_set = TagSet.new(tag_set)
 					res.stream do
 						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
-						bus.send query, topic: settings.program_id
+						bus.send query, topic: request_id
 
-						handler = bus.on DataSet, settings.program_id do |data_set|
+						bus.on DataSet, request_id do |data_set|
 							log.info "got DataSet: #{data_set}"
 							res.write data_set
 						end
 
 						poller.after(4) do
-							#handler.close
+							#bus.deregister_on DataSet, request_id
 							res.close
 						end
 					end
