@@ -107,7 +107,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 
 				on 'feed/query/:tag_set' do |tag_set|
 					tag_set = TagSet.new(tag_set)
-					stream do |res|
+					res.stream do
 						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
 						bus.send query, topic: settings.program_id
 

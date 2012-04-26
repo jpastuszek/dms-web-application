@@ -16,19 +16,19 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 module Streaming
-	class Stream < Cuba::Response
-		def initialize(status = 200, headers = { "Content-Type" => "text/html; charset=utf-8" }, &app)
-			super
+	class Stream
+		def initialize(&app)
 			@app = app
 			@callbacks = []
 		end
 
 		def each(&server)
 			@server = server
-			@app.call(self)
+			@app.call
 		end
 
-		def write(str)
+		# called by Response#write
+		def <<(str)
 			@server.call(str)
 		end
 
@@ -42,14 +42,19 @@ module Streaming
 			end
 			@callbacks.clear
 		end
-
-		def finish
-			[@status, @headers, self]
-		end
 	end
 
-	def stream(&app)
-		@res = Stream.new(&app)
+	def self.setup(cuba)
+		# How do I do it withoud using eval????
+		Cuba::Response.class_eval """
+			def stream(&app)
+				@body = Stream.new(&app)
+			end
+
+			def close
+				@body.close if @body.is_a? Stream
+			end
+		"""
 	end
 end
 
