@@ -109,14 +109,17 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 				end
 
-				on 'feed/query/:tag_set', param?(:time_out, 10) do |tag_set, time_out|
+				on 'feed/query/:tag_set', param?(:time_out, 10), param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 1) do |tag_set, time_out, time_from, time_span, granularity|
+					time_from = Time.parse(time_from + ' UTC')
+
 					tag_set = TagSet.new(tag_set)
 					log.debug "feed for query: #{tag_set} (time out: #{time_out})"
 
-					res.stream do
-						query = DataSetQuery.new(tag_set, Time.now.utc, 60*60, 1)
-						bus.send query, topic: request_id
+					query = DataSetQuery.new(tag_set, time_from, time_span.to_f, granularity.to_f)
+					log.debug "sending query: #{query}"
+					bus.send query, topic: request_id
 
+					res.stream do
 						bus.on DataSet, request_id do |data_set|
 							log.info "got DataSet: #{data_set}"
 							res.write data_set
