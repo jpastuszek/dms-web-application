@@ -109,7 +109,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 				end
 
-				on 'feed/query/:tag_set', param?(:time_out, 10), param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_out, time_from, time_span, granularity|
+				on 'feed/query/:tag_set', param?(:time_out, 0), param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_out, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
 
 					tag_set = TagSet.new(tag_set)
@@ -130,7 +130,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						bus.on DataSet, request_id do |data_set|
 							log.info "got DataSet: #{data_set}"
 							data_set.to_json.each_line do |json_line|
-								res.write "DataSet: #{json_line}\n"
+								res.write "data: #{json_line}\n"
 							end
 							res.write "\n"
 						end
@@ -138,13 +138,18 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						poller.after(time_out.to_i) do
 							#bus.deregister_on DataSet, request_id
 							res.close
-						end
+						end if time_out > 0
 					end
 				end
 
 				# serve bootstrap files
 				on 'bootstrap' do
 					run Rack::File.new(Pathname.new('views') + 'bootstrap')
+				end
+
+				# serve pollyfils
+				on 'polyfill' do
+					run Rack::File.new(Pathname.new('views') + 'polyfill')
 				end
 			end
 		end

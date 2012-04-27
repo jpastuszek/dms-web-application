@@ -14,3 +14,23 @@
       - if no + 1 < tag_sets.length
         end
 
+  - tag_sets.each_with_index do |tag_set, no|
+    :javascript
+      var es = new EventSource('#{root_uri}/feed/query/#{tag_set}');
+
+      es.addEventListener('open', function (event) {
+        var div = document.createElement('div');
+        div.innerHTML = 'opened: ' + es.url;
+        document.body.appendChild(div);
+      }, false);
+
+      es.addEventListener('message', function (event) {
+        document.body.appendChild(document.createTextNode(event.data));
+      }, false);
+
+      es.addEventListener('error', function (event) {
+        var div = document.createElement('div');
+        div.innerHTML = 'closed';
+        document.body.appendChild(div);
+      }, false);
+
