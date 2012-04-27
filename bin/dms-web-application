@@ -120,8 +120,13 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					bus.send query, topic: request_id
 
 					res['Content-Type'] = 'text/event-stream'
+					res['Cache-Control'] = 'no-cache'
+					res['Connection'] = 'keep-alive'
+					res['Access-Control-Allow-Origin'] = '*'
 
 					res.stream do
+						res.write ":#{' padding '.ljust(2049, '-')}\n" # padding
+
 						bus.on DataSet, request_id do |data_set|
 							log.info "got DataSet: #{data_set}"
 							data_set.to_json.each_line do |json_line|
