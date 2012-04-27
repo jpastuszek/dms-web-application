@@ -51,6 +51,10 @@ module Streaming
 				@body = Stream.new(&app)
 			end
 
+			def on_close(&callback)
+				@body.callback(&callback)
+			end
+
 			def close
 				@body.close if @body.is_a? Stream
 			end

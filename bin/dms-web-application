@@ -109,12 +109,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 				end
 
-				on 'feed/query/:tag_set', param?(:time_out, 0), param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_out, time_from, time_span, granularity|
+				on 'feed/query/:tag_set', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
 
 					tag_set = TagSet.new(tag_set)
-					log.debug "feed for query: #{tag_set} (time out: #{time_out})"
-
 					query = DataSetQuery.new(tag_set, time_from, time_span.to_f, granularity.to_f)
 					log.debug "sending query: #{query}"
 					bus.send query, topic: request_id
@@ -135,10 +133,9 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 							res.write "\n"
 						end
 
-						poller.after(time_out.to_i) do
+						res.on_close do
 							#bus.deregister_on DataSet, request_id
-							res.close
-						end if time_out > 0
+						end
 					end
 				end
 
