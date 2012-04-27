@@ -147,9 +147,9 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					run Rack::File.new(Pathname.new('views') + 'bootstrap')
 				end
 
-				# serve pollyfils
-				on 'polyfill' do
-					run Rack::File.new(Pathname.new('views') + 'polyfill')
+				# serve jquery and plugins
+				on 'jquery' do
+					run Rack::File.new(Pathname.new('views') + 'jquery')
 				end
 			end
 		end
