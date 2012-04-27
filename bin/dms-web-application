@@ -119,10 +119,15 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					log.debug "sending query: #{query}"
 					bus.send query, topic: request_id
 
+					res['Content-Type'] = 'text/event-stream'
+
 					res.stream do
 						bus.on DataSet, request_id do |data_set|
 							log.info "got DataSet: #{data_set}"
-							res.write data_set
+							data_set.to_json.each_line do |json_line|
+								res.write "DataSet: #{json_line}\n"
+							end
+							res.write "\n"
 						end
 
 						poller.after(time_out.to_i) do

@@ -5,7 +5,7 @@ gem "cli", "~> 1.1.1"
 gem "ruby-ip", "~> 0.9"
 gem "facter", "~> 1.6.5"
 gem "tnetstring", "~> 0.3.4"
-gem "multi_json", "~> 1.2.0"
+gem "multi_json", "~> 1.3"
 
 gem "cuba", "~> 3.0"
 gem "less", "~> 2.1"
