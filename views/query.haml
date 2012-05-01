@@ -1,32 +1,56 @@
 .page-header
   %h1= page.titlecase
 
-%form.well.form-search{action: relative_uri('submit'), method: 'get'}
-  %input.input-medium.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags'}
-  %button.btn{type: 'submit'}
-    Query
+.fluid-row
+  .span12
+    %form.well.form-search{action: relative_uri('submit'), method: 'get'}
+      %input.input-medium.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags'}
+      %button.btn{type: 'submit'}
+        Query
 
 - if defined? tag_sets and not tag_sets.empty?
-  .alert.alert-info
-    Quering for:
-    - tag_sets.each_with_index do |tag_set, no|
-      %strong= tag_set
-      - if no + 1 < tag_sets.length
-        end
+  .fluid-row
+    .span12
+      .alert.alert-info
+        Quering for:
+        - tag_sets.each_with_index do |tag_set, set_no|
+          %strong= tag_set
+          - if set_no + 1 < tag_sets.length
+            end
 
-  - tag_sets.each_with_index do |tag_set, no|
-    :javascript
-      $.eventsource({
-        label: 'DataSet-#{tag_set}',
-        url: '#{root_uri}/feed/query/#{tag_set}',
-        dataType: 'json',
+  - tag_sets.each_with_index do |tag_set, set_no|
+    .fluid-row
+      .span12
+        %div{id: "graph_container_#{set_no}"}
 
-        open: function() {
-          console.log( "opened" );
-        },
+        :javascript
+          var graph_no = 1;
+          $.eventsource({
+            label: 'DataSet-#{tag_set}',
+            url: '#{root_uri}/feed/query/#{tag_set}',
+            dataType: 'json',
 
-        message: function( data ) {
-          console.log( data );
-        }
-      })
+            open: function() {
+              console.log( "opened" );
+            },
+
+            message: function( data ) {
+              console.log( data );
+              var series_data = new Array()
+              var series_keys = new Array()
+
+              for (key in data.component_data) {
+                series_keys.push(key)
+                series_data.push(data.component_data[key])
+              }
+
+              console.log(series_data)
+              console.log(series_keys)
+
+              $("#graph_container_#{set_no}").append("<div style='width: 600px; height:200px' id='graph_#{set_no}" + graph_no + "'></div>")
+
+              $.plot($("#graph_#{set_no}" + graph_no), series_data)
+              graph_no += 1
+            }
+          })
 
