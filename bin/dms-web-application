@@ -145,8 +145,8 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				end
 
 				# serve jquery and plugins
-				on 'jquery' do
-					run Rack::File.new(Pathname.new('views') + 'jquery')
+				on 'js' do
+					run Rack::File.new(Pathname.new('views') + 'js')
 				end
 			end
 		end
