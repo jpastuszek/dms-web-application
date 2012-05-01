@@ -32,7 +32,7 @@ module Rack
 					# UUID CONN_ID PATH SIZE:HEADERS,SIZE:BODY,
 					uuid, conn_id, path, rest = msg.split(' ', 4)
 					headers, rest = TNetstring.parse(rest)
-					headers = MultiJson.decode(headers)
+					headers = MultiJson.load(headers)
 					body, _ = TNetstring.parse(rest)
 
 					self.new(uuid, conn_id, path, headers, body)
@@ -46,7 +46,7 @@ module Rack
 					@headers = headers
 
 					if json?
-						@body = MultiJson.decode(body)
+						@body = MultiJson.load(body)
 						return
 					end
 
