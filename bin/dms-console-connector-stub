@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+# Copyright (c) 2012 Jakub Pastuszek
+#
+# This file is part of Distributed Monitoring System.
+#
+# Distributed Monitoring System is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Distributed Monitoring System is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'pathname'
+require 'dms-core'
+
+VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
+
+Program::Daemon.new('DMS Console Connector', VERSION) do
+	cli do
+		description "DMS console messaging hub"
+
+		option :external_sub_bind_address,
+			short: :c, 
+			description: 'ZeroMQ bind adderss for data-processor connections - subscriber', 
+			default: 'tcp://127.0.0.1:12000'
+		option :external_pub_bind_address,
+			short: :C, 
+			description: 'ZeroMQ bind adderss for data-processor connections - publisher', 
+			default: 'tcp://127.0.0.1:12001'
+		option :internal_sub_bind_address,
+			short: :i, 
+			description: 'ZeroMQ bind adderss for internal console components connections - subscriber', 
+			default: 'ipc:///tmp/dms-console-connector-sub'
+		option :internal_pub_bind_address,
+			short: :I, 
+			description: 'ZeroMQ bind adderss for internal console components connections - publisher', 
+			default: 'ipc:///tmp/dms-console-connector-pub'
+		option :delay,
+			short: :D,
+			description: 'deleay stub message sending by given no of seconds', 
+			cast: Float,
+			default: 0.2
+
+		linger_time
+	end
+
+	main do |settings|
+		ZeroMQ.new do |zmq|
+			poller = ZeroMQ::Poller.new
+			log.debug "listening on internal console subscriber: #{settings.internal_sub_bind_address}, publisher: #{settings.internal_pub_bind_address}"
+			zmq.bus_bind(settings.internal_pub_bind_address, settings.internal_sub_bind_address, {linger: settings.linger_time}) do |internal_bus|
+
+				internal_bus.on DataSetQuery do |message, topic|
+					log.debug "#{message}, #{topic}"
+
+					8.times do
+						ds = DataSet.new('memory', 'location:magi, system:memory', Time.at(100), 100) do
+							total = rand(100..1000)
+
+							100.times do |time|
+								used = rand(total*0.25..total*0.75)
+								component_data 'free', Time.now.to_f + time, used
+								component_data 'used', Time.now.to_f + time, total - used
+								component_data 'total', Time.now.to_f + time, total
+							end
+						end
+						internal_bus.send ds, topic: topic
+						sleep settings.delay
+					end
+				end
+
+				poller << internal_bus
+
+				main_loop do
+					poller.poll!
+				end
+			end
+		end
+	end
+end
+
+
