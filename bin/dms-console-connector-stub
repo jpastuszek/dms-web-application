@@ -69,7 +69,7 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 								used = rand(total*0.25..total*0.75)
 								component_data 'free', Time.now.to_f + time, used
 								component_data 'used', Time.now.to_f + time, total - used
-								component_data 'total', Time.now.to_f + time, total
+								#component_data 'total', Time.now.to_f + 0.6 + time, total
 							end
 						end
 						internal_bus.send ds, topic: topic
