@@ -57,7 +57,9 @@
                 $.plot($("#graph_#{set_no}" + graph_no), series, {
                       xaxis: {
                         mode: "time",
-                        timeformat: "%y/%m/%d %H:%M:%S"
+                        timeformat: "%y/%m/%d %H:%M:%S",
+                        min: data.time_start,
+                        max: data.time_end
                       },
                       yaxis: {
                         tickFormatter: function(val, axis) {
