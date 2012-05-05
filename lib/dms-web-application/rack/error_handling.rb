@@ -17,7 +17,6 @@
 #
 module Rack
 	class ErrorHandling
-		class ErrorReporter < Cuba; end
 		def initialize(app, &block)
 			@app = app
 		end

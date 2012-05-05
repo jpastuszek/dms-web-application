@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
+require 'rack'
+
 module Rack::Handler
 	autoload :DMSMongrel2, 'dms-web-application/rack/handler/dms_mongrel2.rb'
 end

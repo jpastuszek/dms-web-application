@@ -34,14 +34,14 @@
               console.log( "opened" );
             },
 
-            message: function( data ) {
-              console.log( data );
+            message: function(data) {
+              console.log(data);
               var series_data = new Array()
               var series_keys = new Array()
 
-              for (key in data.component_data) {
+              for (key in data.series) {
                 series_keys.push(key)
-                series_data.push(data.component_data[key])
+                series_data.push(data.series[key])
               }
 
               console.log(series_data)

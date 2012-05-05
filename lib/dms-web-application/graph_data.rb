@@ -17,22 +17,37 @@
 
 require 'multi_json'
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-require 'rspec'
-require 'dms-web-application'
-
-# Requires supporting files with custom matchers and macros, etc,
-# in ./support/ and its subdirectories.
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
-
-RSpec.configure do |config|
-  
-end
-
-RSpec::Matchers.define :match_json do |expected|
-	  match do |actual|
-			MultiJson.load(actual) == MultiJson.load(expected)
+class GraphData
+	def initialize(title, value_unit, time_from, time_span, component_data)
+		@data = {}
+		@data[:title] = title
+		@data[:value_unit] = value_unit
+		@data[:value_min] = nil
+		@data[:value_max] = nil
+		@data[:time_start] = to_json_time(time_from.to_f - time_span)
+		@data[:time_end] = to_json_time(time_from)
+		@data[:series] = {}
+		component_data.each do |name, data|
+			series_data = []
+			data.reverse_each do |time, value|
+				series_data << [to_json_time(time), value]
+			end
+			@data[:series][name] = series_data
 		end
+	end
+
+	def self.from_data_set(title, value_unit, data_set)
+		self.new(title, value_unit, data_set.time_from, data_set.time_span, data_set.component_data)
+	end
+
+	def to_json(a = nil)
+		MultiJson.dump(@data)
+	end
+
+	private
+
+	def to_json_time(time)
+		Integer(time.to_f * 1000)
+	end
 end
 

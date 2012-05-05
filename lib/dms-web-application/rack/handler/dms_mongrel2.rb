@@ -17,6 +17,7 @@
 #
 require 'multi_json'
 require 'tnetstring'
+require 'rack'
 
 module Rack
 	module Handler

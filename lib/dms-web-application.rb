@@ -31,3 +31,5 @@ require 'dms-web-application/helpers/empty_param_matcher'
 require 'dms-web-application/helpers/optional_param_matcher'
 require 'dms-web-application/helpers/request_id'
 
+require 'dms-web-application/graph_data'
+
