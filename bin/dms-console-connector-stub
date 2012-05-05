@@ -63,7 +63,8 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 
 					8.times do
 						ds = DataSet.new('memory', 'location:magi, system:memory', Time.at(1336222585), 100) do
-							total = rand(100..10000000)
+							total = (rand > 0.5 ? rand(0..1000000000000.0) : 1.0 / 10**rand(1..10) * rand(1..1000.0))
+							p total
 
 							100.times do |time|
 								used = rand(total*0.25..total*0.75)

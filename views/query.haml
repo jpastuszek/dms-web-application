@@ -36,23 +36,46 @@
 
             message: function(data) {
               console.log(data);
-              var series_data = new Array()
-              var series_keys = new Array()
+              var series = new Array()
 
               for (key in data.series) {
-                series_keys.push(key)
-                series_data.push(data.series[key])
+                series.push({
+                  label: key,
+                  data: data.series[key]
+                })
               }
 
-              console.log(series_data)
-              console.log(series_keys)
+              console.log(series)
 
               $("#graph_container_#{set_no}").append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
 
-              $.plot($("#graph_#{set_no}" + graph_no), series_data, {
+              $.plot($("#graph_#{set_no}" + graph_no), series, {
                     xaxis: {
                       mode: "time",
                       timeformat: "%y/%m/%d %H:%M:%S"
+                    },
+                    yaxis: {
+                      tickFormatter: function(val, axis) {
+                        base = 1000
+                        high_units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+                        low_units = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y']
+
+                        unit = ''
+
+                        if (Math.abs(val) > 999) {
+                          while (Math.abs(val) > base - 1) {
+                            unit = high_units.shift()
+                            val /= base
+                          }
+                        } else if (Math.abs(val) < 1.0 && Math.abs(val) > 0.0) {
+                          while (Math.abs(val) < 1.0) {
+                            unit = low_units.shift()
+                            val *= base
+                          }
+                        }
+                        
+                        return val.toFixed(0) + ' ' + unit + data.value_unit;
+                      }
                     },
                     series: {
                       stack: true,
