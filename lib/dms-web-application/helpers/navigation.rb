@@ -17,19 +17,11 @@
 #
 module Navigation
 	def root_uri(*parts)
-		out = Pathname.new(env['ROOT_SCRIPT_NAME'])
-		parts.each do |part|
-			out += part
-		end
-		out.expand_path.to_s
+		build_uri(env['ROOT_SCRIPT_NAME'], *parts)
 	end
 
 	def relative_uri(*parts)
-		out = Pathname.new(env['SCRIPT_NAME'])
-		parts.each do |part|
-			out += part
-		end
-		out.expand_path.to_s
+		build_uri(env['SCRIPT_NAME'], *parts)
 	end
 
 	def uri
@@ -38,6 +30,14 @@ module Navigation
 
 	def go_to(*parts)
 		res.redirect(root_uri(*parts))
+	end
+
+	def build_uri(*parts)
+		out = Pathname.new(parts.shift)
+		parts.each do |part|
+			out += Rack::Utils.escape(part)
+		end
+		out.expand_path.to_s
 	end
 end
 

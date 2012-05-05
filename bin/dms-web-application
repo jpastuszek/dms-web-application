@@ -100,7 +100,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						go_to 'query', tag_set
 					end
 
-					tag_sets = Rack::Utils.unescape(env['PATH_INFO']).split('/').tap{|t| t.shift}
+					tag_sets = env['PATH_INFO'][1..-1].split('|')
 					if tag_sets.empty?
 						send_page 'query'
 					else
@@ -109,7 +109,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					end
 				end
 
-				on 'feed/query/:tag_set', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_from, time_span, granularity|
+				on 'feed/query/(.*)', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
 
 					tag_set = TagSet.new(tag_set)
