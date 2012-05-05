@@ -19,83 +19,83 @@
             end
 
   - tag_sets.each_with_index do |tag_set, set_no|
-    .row
-      .span12
+    .section
+      .page-header
         %h2
           Results for query: #{tag_set}
-        %hr
+      .row
+        .span12
+          %div{id: "graph_container_#{set_no}"}
 
-        %div{id: "graph_container_#{set_no}"}
+          :javascript
+            var graph_no = 1;
+            $.eventsource({
+              label: 'DataSet-#{tag_set}',
+              url: '#{root_uri}/feed/query/#{tag_set}',
+              dataType: 'json',
 
-        :javascript
-          var graph_no = 1;
-          $.eventsource({
-            label: 'DataSet-#{tag_set}',
-            url: '#{root_uri}/feed/query/#{tag_set}',
-            dataType: 'json',
+              open: function() {
+                console.log( "opened" );
+              },
 
-            open: function() {
-              console.log( "opened" );
-            },
+              message: function(data) {
+                console.log(data);
+                var series = new Array()
 
-            message: function(data) {
-              console.log(data);
-              var series = new Array()
+                for (key in data.series) {
+                  series.push({
+                    label: key,
+                    data: data.series[key]
+                  })
+                }
 
-              for (key in data.series) {
-                series.push({
-                  label: key,
-                  data: data.series[key]
-                })
-              }
+                console.log(series)
 
-              console.log(series)
+                $("#graph_container_#{set_no}").append("<h3>" + data.title + "</h3>")
+                $("#graph_container_#{set_no}").append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
 
-              $("#graph_container_#{set_no}").append("<h3>" + data.title + "</h3>")
-              $("#graph_container_#{set_no}").append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
+                $.plot($("#graph_#{set_no}" + graph_no), series, {
+                      xaxis: {
+                        mode: "time",
+                        timeformat: "%y/%m/%d %H:%M:%S"
+                      },
+                      yaxis: {
+                        tickFormatter: function(val, axis) {
+                          base = 1000
+                          high_units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+                          low_units = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y']
 
-              $.plot($("#graph_#{set_no}" + graph_no), series, {
-                    xaxis: {
-                      mode: "time",
-                      timeformat: "%y/%m/%d %H:%M:%S"
-                    },
-                    yaxis: {
-                      tickFormatter: function(val, axis) {
-                        base = 1000
-                        high_units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-                        low_units = ['m', 'u', 'n', 'p', 'f', 'a', 'z', 'y']
+                          unit = ''
 
-                        unit = ''
-
-                        if (Math.abs(val) > 999) {
-                          while (Math.abs(val) > base - 1) {
-                            unit = high_units.shift()
-                            val /= base
+                          if (Math.abs(val) > 999) {
+                            while (Math.abs(val) > base - 1) {
+                              unit = high_units.shift()
+                              val /= base
+                            }
+                          } else if (Math.abs(val) < 1.0 && Math.abs(val) > 0.0) {
+                            while (Math.abs(val) < 1.0) {
+                              unit = low_units.shift()
+                              val *= base
+                            }
                           }
-                        } else if (Math.abs(val) < 1.0 && Math.abs(val) > 0.0) {
-                          while (Math.abs(val) < 1.0) {
-                            unit = low_units.shift()
-                            val *= base
-                          }
+                          
+                          return val.toFixed(0) + ' ' + unit + data.value_unit;
                         }
-                        
-                        return val.toFixed(0) + ' ' + unit + data.value_unit;
-                      }
-                    },
-                    legend: {
-                      position: 'nw'
-                    },
-                    series: {
-                      stack: true,
-                      lines: { 
-                        show: true, 
-                        fill: true, 
-                        steps: true 
+                      },
+                      legend: {
+                        position: 'nw'
+                      },
+                      series: {
+                        stack: true,
+                        lines: { 
+                          show: true, 
+                          fill: true, 
+                          steps: true 
+                        }
                       }
                     }
-                  }
-              )
-              graph_no += 1
-            }
-          })
+                )
+                graph_no += 1
+              }
+            })
 
