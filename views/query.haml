@@ -1,99 +1,100 @@
-.page-header
-  %h1= page.titlecase
+%header
+  .page-header
+    %h1= page.titlecase
 
-.row
-  .span12
-    %form.well.form-search{action: relative_uri('submit'), method: 'get'}
-      %input.input-medium.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags'}
-      %button.btn{type: 'submit'}
-        Query
-
-- if defined? tag_sets and not tag_sets.empty?
   .row
     .span12
-      .alert.alert-info
-        Quering for:
-        - tag_sets.each_with_index do |tag_set, set_no|
-          %strong= tag_set
-          - if set_no + 1 < tag_sets.length
-            end
+      %form.well.form-search{action: relative_uri('submit'), method: 'get'}
+        %input.input-medium.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags'}
+        %button.btn{type: 'submit'}
+          Query
 
-  - tag_sets.each_with_index do |tag_set, set_no|
-    .section
-      .page-header
-        %h2
-          Results for query: #{tag_set}
-      .row
-        .span12
-          %div{id: "graph_container_#{set_no}"}
+  - if defined? tag_sets and not tag_sets.empty?
+    .row
+      .span12
+        .alert.alert-info
+          Quering for:
+          - tag_sets.each_with_index do |tag_set, set_no|
+            %strong= tag_set
+            - if set_no + 1 < tag_sets.length
+              end
 
-          :javascript
-            var graph_no = 1;
-            $.eventsource({
-              label: 'DataSet-#{tag_set}',
-              url: '#{root_uri}/feed/query/#{tag_set}',
-              dataType: 'json',
+- defined? tag_sets and tag_sets.each_with_index do |tag_set, set_no|
+  %section
+    .page-header
+      %h2
+        Results for query: #{tag_set}
+    .row
+      .span12
+        %div{id: "graph_container_#{set_no}"}
 
-              open: function() {
-              },
+        :javascript
+          var graph_no = 1;
+          $.eventsource({
+            label: 'DataSet-#{tag_set}',
+            url: '#{root_uri}/feed/query/#{tag_set}',
+            dataType: 'json',
 
-              message: function(data) {
-                var series = new Array()
+            open: function() {
+            },
 
-                for (key in data.series) {
-                  series.push({
-                    label: key,
-                    data: data.series[key]
-                  })
-                }
+            message: function(data) {
+              var series = new Array()
 
-                $("#graph_container_#{set_no}").append("<h3>" + data.title + "</h3>")
-                $("#graph_container_#{set_no}").append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
+              for (key in data.series) {
+                series.push({
+                  label: key,
+                  data: data.series[key]
+                })
+              }
 
-                $.plot($("#graph_#{set_no}" + graph_no), series, {
-                      xaxis: {
-                        mode: "time",
-                        timeformat: "%y/%m/%d %H:%M:%S",
-                        min: data.time_start,
-                        max: data.time_end
-                      },
-                      yaxis: {
-                        tickFormatter: function(val, axis) {
-                          base = 1000
-                          high_units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-                          low_units = ['m', '&micro;', 'n', 'p', 'f', 'a', 'z', 'y']
+              $("#graph_container_#{set_no}").append("<h3>" + data.title + "</h3>")
+              $("#graph_container_#{set_no}").append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
 
-                          unit = ''
+              $.plot($("#graph_#{set_no}" + graph_no), series, {
+                    xaxis: {
+                      mode: "time",
+                      timeformat: "%y/%m/%d %H:%M:%S",
+                      min: data.time_start,
+                      max: data.time_end
+                    },
+                    yaxis: {
+                      tickFormatter: function(val, axis) {
+                        base = 1000
+                        high_units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+                        low_units = ['m', '&micro;', 'n', 'p', 'f', 'a', 'z', 'y']
 
-                          if (Math.abs(val) > 999) {
-                            while (Math.abs(val) > base - 1) {
-                              unit = high_units.shift()
-                              val /= base
-                            }
-                          } else if (Math.abs(val) < 1.0 && Math.abs(val) > 0.0) {
-                            while (Math.abs(val) < 1.0) {
-                              unit = low_units.shift()
-                              val *= base
-                            }
+                        unit = ''
+
+                        if (Math.abs(val) > 999) {
+                          while (Math.abs(val) > base - 1) {
+                            unit = high_units.shift()
+                            val /= base
                           }
-                          
-                          return val.toFixed(0) + ' ' + unit + data.value_unit;
+                        } else if (Math.abs(val) < 1.0 && Math.abs(val) > 0.0) {
+                          while (Math.abs(val) < 1.0) {
+                            unit = low_units.shift()
+                            val *= base
+                          }
                         }
-                      },
-                      legend: {
-                        position: 'nw'
-                      },
-                      series: {
-                        stack: true,
-                        lines: { 
-                          show: true, 
-                          fill: true, 
-                          steps: true 
-                        }
+                        
+                        return val.toFixed(0) + ' ' + unit + data.value_unit;
+                      }
+                    },
+                    legend: {
+                      position: 'nw'
+                    },
+                    series: {
+                      stack: true,
+                      lines: { 
+                        show: true, 
+                        fill: true, 
+                        steps: true 
                       }
                     }
-                )
-                graph_no += 1
-              }
-            })
+                  }
+              )
+              graph_no += 1
+            }
+          })
 
