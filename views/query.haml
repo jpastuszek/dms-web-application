@@ -5,7 +5,7 @@
   .row
     .span12
       %form.well.form-search{action: relative_uri('submit'), method: 'get'}
-        %input.span4.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags', value: defined?(tag_sets) ? tag_sets.join(' | ') : nil}
+        %input.span4.search-query{name: 'tag_set', type: 'text', placeholder: 'comma separated tags', value: defined?(tag_expression) ? tag_expression : nil}
         %button.btn{type: 'submit'}
           Query
 
