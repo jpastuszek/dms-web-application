@@ -9,7 +9,7 @@
         %label
           form
         .input-append
-          %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date, 'data-date-format' => 'mm/dd/yy'}>
+          %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date}>
           %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
           %button.btn{type: 'button'}>
             now
@@ -26,12 +26,14 @@
           Query
 
       :javascript
-        $('.datepicker').datepicker()
+        $('.datepicker').datepicker({
+            format: 'dd-mm-yy'
+        })
         $('.timepicker').timepicker({
-          defaultTime: 'current',
-          minuteStep: 15,
+          defaultTime: '#{time_from_time}',
+          minuteStep: 5,
           template: 'dropdown'
-        });
+        })
 
 
   - unless tag_query.empty?

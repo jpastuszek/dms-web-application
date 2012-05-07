@@ -103,6 +103,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					on 'submit', param!('tag_query') do |tag_query|
 						go_to 'query', tag_query, {
 							time_from_date: time_from_date, 
+							time_from_time: time_from_time, 
 							time_span_value: time_span_value, 
 							time_span_unit: time_span_unit
 						}
@@ -111,7 +112,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					tag_query_string = (env['PATH_INFO'][1..-1] || '')
 					tag_query = tag_query_string.to_tag_query
 
-					time_from_date ||= Time.now.strftime('%d/%m/%y')
+					time_from_date ||= Time.now.strftime('%d-%m-%y')
 					time_from_time ||= Time.now.strftime('%I:%M %p')
 
 					time_span = case time_span_unit
