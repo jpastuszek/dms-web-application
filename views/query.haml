@@ -11,7 +11,7 @@
         .input-append
           %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date}>
           %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
-          %button.btn{type: 'button'}>
+          %button.now.btn{type: 'button'}>
             now
 
         %label
@@ -33,6 +33,18 @@
           defaultTime: '#{time_from_time}',
           minuteStep: 1,
           template: 'dropdown'
+        })
+        $('.now').on('click', function() {
+          //console.log($('.timepicker').val('12:12 AM'))
+
+          //$('.timepicker').val('12:12 AM')
+          //$('.timepicker').timepicker('updateFromElementVal')
+
+          $('.timepicker').timepicker('reset')
+          $('.datepicker').datepicker('fill')
+
+          //$('.timepicker').timepicker('setDefaultTime', '12:12 AM')
+          //$('.timepicker').timepicker('setTime', '12:12 AM')
         })
 
 
