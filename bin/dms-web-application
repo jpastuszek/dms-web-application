@@ -23,6 +23,8 @@ require 'ip'
 require 'cuba'
 require "cuba/render"
 require 'dms-web-application'
+require 'time'
+require 'active_support/core_ext'
 
 VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
 
@@ -112,8 +114,12 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					tag_query_string = (env['PATH_INFO'][1..-1] || '')
 					tag_query = tag_query_string.to_tag_query
 
-					time_from_date ||= Time.now.strftime('%d-%m-%y')
-					time_from_time ||= Time.now.strftime('%I:%M %p')
+					time_from_date ||= Time.now.utc.strftime('%y-%m-%d')
+					time_from_time ||= Time.now.utc.strftime('%I:%M %p')
+					time_from = Time.parse("#{time_from_date} #{time_from_time} UTC")
+
+					time_span_unit ||= 'Weeks'
+					time_span_value ||= 2
 
 					time_span = case time_span_unit
 						when 'Minutes'
@@ -125,10 +131,11 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						when 'Weeks'
 							time_span_value.to_f * 60 * 60 * 24 * 7
 						when 'Months'
-							time_span_value.to_f * 60 * 60 * 24 * 31
+							time_from.to_f - time_from.months_ago(time_span_value.to_f).to_f
 						when 'Years'
-							time_span_value.to_f * 60 * 60 * 24 * 356
+							time_from.to_f - time_from.years_ago(time_span_value.to_f).to_f
 					end
+					time_span = time_span.abs
 
 					log.info "quering for tag sets: #{tag_query} (#{tag_query_string}): time span: #{time_span}"
 					
@@ -138,11 +145,12 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						time_span_value: time_span_value,
 						time_from_date: time_from_date,
 						time_from_time: time_from_time,
+						time_from: time_from,
 						time_span_unit: time_span_unit,
 						time_span: time_span
 				end
 
-				on 'feed/query/(.*)', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_expression, time_from, time_span, granularity|
+				on 'feed/query/(.*)', param?(:time_from, Time.now.utc.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_expression, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
 
 					query = DataSetQuery.new(tag_expression, time_from, time_span.to_f, granularity.to_f)

@@ -27,11 +27,11 @@
 
       :javascript
         $('.datepicker').datepicker({
-            format: 'dd-mm-yy'
+            format: 'yy-mm-dd'
         })
         $('.timepicker').timepicker({
           defaultTime: '#{time_from_time}',
-          minuteStep: 5,
+          minuteStep: 1,
           template: 'dropdown'
         })
 
@@ -45,6 +45,11 @@
             %strong= tag_expression
             - if set_no + 1 < tag_query.length
               end
+          from
+          %strong= time_from.utc.strftime('%Y-%m-%d %I:%M %p') + ' UTC'
+          back to 
+          %strong= (time_from - time_span).utc.strftime('%Y-%m-%d %I:%M %p') + ' UTC'
+
 
 - tag_query.each_with_index do |tag_expression, set_no|
   %section
@@ -59,7 +64,7 @@
           var graph_no = 1;
           $.eventsource({
             label: 'TagExpression-#{tag_expression}',
-            url: '#{root_uri('feed', 'query', tag_expression, time_span: time_span)}',
+            url: '#{root_uri('feed', 'query', tag_expression, time_from: time_from.utc, time_span: time_span)}',
             dataType: 'json',
 
             open: function() {
@@ -81,7 +86,7 @@
               $.plot($("#graph_#{set_no}" + graph_no), series, {
                     xaxis: {
                       mode: "time",
-                      timeformat: "%y/%m/%d %H:%M:%S",
+                      timeformat: "%y/%m/%d %H:%M %P",
                       min: data.time_start,
                       max: data.time_end
                     },

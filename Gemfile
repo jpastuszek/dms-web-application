@@ -12,6 +12,9 @@ gem "less", "~> 2.1"
 gem "haml", "~> 2.1"
 gem "tilt", "~> 1.3"
 
+gem "active_support", "~> 3.0"
+gem "i18n", "~> 0.6"
+
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
 group :development do
