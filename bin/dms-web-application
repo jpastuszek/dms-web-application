@@ -94,15 +94,20 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					send_page 'dashboard'
 				end
 
-				on 'query', param?('time_span_value'), param?('time_span_unit') do |time_span_value, time_span_unit|
+				on 'query', param?('time_from_date'), param?('time_span_value'), param?('time_span_unit') do |time_from_date, time_span_value, time_span_unit|
 					# handle form submit
-					log.debug env['QUERY_STRING']
 					on 'submit', param!('tag_query') do |tag_query|
-						go_to 'query', tag_query, {time_span_value: time_span_value, time_span_unit: time_span_unit}
+						go_to 'query', tag_query, {
+							time_from_date: time_from_date, 
+							time_span_value: time_span_value, 
+							time_span_unit: time_span_unit
+						}
 					end
 
 					tag_query_string = (env['PATH_INFO'][1..-1] || '')
 					tag_query = tag_query_string.to_tag_query
+
+					time_from_date ||= Time.now.strftime('%d/%m/%y')
 
 					time_span = case time_span_unit
 						when 'Minutes'
@@ -125,6 +130,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						tag_query_string: tag_query_string, 
 						tag_query: tag_query,
 						time_span_value: time_span_value,
+						time_from_date: time_from_date,
 						time_span_unit: time_span_unit,
 						time_span: time_span
 				end
