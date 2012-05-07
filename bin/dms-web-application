@@ -97,12 +97,12 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				on 'query', param?('time_span_value'), param?('time_span_unit') do |time_span_value, time_span_unit|
 					# handle form submit
 					log.debug env['QUERY_STRING']
-					on 'submit', param!('tag_set') do |tag_set|
-						go_to 'query', tag_set, {time_span_value: time_span_value, time_span_unit: time_span_unit}
+					on 'submit', param!('tag_query') do |tag_query|
+						go_to 'query', tag_query, {time_span_value: time_span_value, time_span_unit: time_span_unit}
 					end
 
-					tag_expression = env['PATH_INFO'][1..-1] || ''
-					tag_sets = tag_expression.split('|').map{|tag_set| TagSet.new(tag_set)}
+					tag_query_string = (env['PATH_INFO'][1..-1] || '')
+					tag_query = tag_query_string.to_tag_query
 
 					time_span = case time_span_unit
 						when 'Minutes'
@@ -119,21 +119,20 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 							time_span_value.to_f * 60 * 60 * 24 * 356
 					end
 
-					log.info "quering for tag sets: #{tag_sets}: time span: #{time_span}"
+					log.info "quering for tag sets: #{tag_query} (#{tag_query_string}): time span: #{time_span}"
 					
 					send_page 'query', 
-						tag_expression: tag_expression, 
-						tag_sets: tag_sets,
+						tag_query_string: tag_query_string, 
+						tag_query: tag_query,
 						time_span_value: time_span_value,
 						time_span_unit: time_span_unit,
 						time_span: time_span
 				end
 
-				on 'feed/query/(.*)', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_from, time_span, granularity|
+				on 'feed/query/(.*)', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_expression, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
 
-					tag_set = TagSet.new(tag_set)
-					query = DataSetQuery.new(tag_set, time_from, time_span.to_f, granularity.to_f)
+					query = DataSetQuery.new(tag_expression, time_from, time_span.to_f, granularity.to_f)
 					log.debug "sending query: #{query}"
 					bus.send query, topic: request_id
 
