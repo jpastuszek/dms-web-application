@@ -94,20 +94,39 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					send_page 'dashboard'
 				end
 
-				on 'query' do
+				on 'query', param?('time_span_value'), param?('time_span_unit') do |time_span_value, time_span_unit|
 					# handle form submit
+					log.debug env['QUERY_STRING']
 					on 'submit', param!('tag_set') do |tag_set|
-						go_to 'query', tag_set
+						go_to 'query', tag_set, {time_span_value: time_span_value, time_span_unit: time_span_unit}
 					end
 
-					if env['PATH_INFO'].empty?
-						send_page 'query'
-					else
-						tag_expression = env['PATH_INFO'][1..-1]
-						tag_sets = tag_expression.split('|').map{|tag_set| TagSet.new(tag_set)}
-						log.info "quering for tag sets: #{tag_sets}"
-						send_page 'query', tag_expression: tag_expression, tag_sets: tag_sets
+					tag_expression = env['PATH_INFO'][1..-1] || ''
+					tag_sets = tag_expression.split('|').map{|tag_set| TagSet.new(tag_set)}
+
+					time_span = case time_span_unit
+						when 'Minutes'
+							time_span_value.to_f * 60
+						when 'Hours'
+							time_span_value.to_f * 60 * 60
+						when 'Days'
+							time_span_value.to_f * 60 * 60 * 24
+						when 'Weeks'
+							time_span_value.to_f * 60 * 60 * 24 * 7
+						when 'Months'
+							time_span_value.to_f * 60 * 60 * 24 * 31
+						when 'Years'
+							time_span_value.to_f * 60 * 60 * 24 * 356
 					end
+
+					log.info "quering for tag sets: #{tag_sets}: time span: #{time_span}"
+					
+					send_page 'query', 
+						tag_expression: tag_expression, 
+						tag_sets: tag_sets,
+						time_span_value: time_span_value,
+						time_span_unit: time_span_unit,
+						time_span: time_span
 				end
 
 				on 'feed/query/(.*)', param?(:time_from, Time.now.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_set, time_from, time_span, granularity|

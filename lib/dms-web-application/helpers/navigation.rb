@@ -34,10 +34,21 @@ module Navigation
 
 	def build_uri(*parts)
 		out = Pathname.new(parts.shift)
+		query = {}
 		parts.each do |part|
-			out += Rack::Utils.escape(part)
+			if part.is_a? Hash
+				query.merge! part
+			else
+				out += Rack::Utils.escape(part)
+			end
 		end
-		out.expand_path.to_s
+		out = out.expand_path.to_s
+
+		unless query.empty?
+			out += '?' + query.map{|k,v| "#{k}=#{v}"}.join('&')
+		end
+
+		out
 	end
 end
 
