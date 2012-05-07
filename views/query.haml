@@ -9,7 +9,8 @@
         %label
           form
         .input-append
-          %input#time-from-date{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date, 'data-date-format' => 'mm/dd/yy'}>
+          %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date, 'data-date-format' => 'mm/dd/yy'}>
+          %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
           %button.btn{type: 'button'}>
             now
 
@@ -25,7 +26,12 @@
           Query
 
       :javascript
-        $('#time-from-date').datepicker()
+        $('.datepicker').datepicker()
+        $('.timepicker').timepicker({
+          defaultTime: 'current',
+          minuteStep: 15,
+          template: 'dropdown'
+        });
 
 
   - unless tag_query.empty?
