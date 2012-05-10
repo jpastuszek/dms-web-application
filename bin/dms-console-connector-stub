@@ -62,16 +62,20 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 					log.debug "#{message}, #{topic}"
 
 					8.times do
-						ds = DataSet.new('memory', 'location:magi, system:memory', Time.at(1336222585), 100) do
+						ds = DataSet.new('memory', 'location:magi, system:memory', message.time_from, message.time_span) do
 							total = (rand > 0.5 ? rand(0..1000000000000.0) : 1.0 / 10**rand(1..10) * rand(1..1000.0))
 
-							101.times do |time|
+							data_points = (message.time_span / message.granularity).to_i
+							time_step = message.granularity
+
+							data_points.times do |point_no|
 								used = rand(total*0.25..total*0.75)
-								component_data 'free', Time.at(1336222585).to_f - time, used
-								component_data 'used', Time.at(1336222585).to_f - time, total - used
-								#component_data 'total', Time.now.to_f + 0.6 + time, total
+								time = message.time_from.to_f - (point_no * time_step)
+								component_data 'free', time, used
+								component_data 'used', time, total - used
 							end
 						end
+						p ds
 						internal_bus.send ds, topic: topic
 						sleep settings.delay
 					end

@@ -97,10 +97,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				end
 
 				on 'query', 
-					param?('time_from_date'), 
-					param?('time_from_time'), 
-					param?('time_span_value'), 
-					param?('time_span_unit') do |time_from_date, time_from_time, time_span_value, time_span_unit|
+					param?('time_from_date', Time.now.utc.strftime('%y-%m-%d')), 
+					param?('time_from_time', Time.now.utc.strftime('%I:%M %p')), 
+					param?('time_span_value', 2), 
+					param?('time_span_unit', 'Weeks') do |time_from_date, time_from_time, time_span_value, time_span_unit|
 					# handle form submit
 					on 'submit', param!('tag_query') do |tag_query|
 						go_to 'query', tag_query, {
@@ -114,13 +114,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 					tag_query_string = (env['PATH_INFO'][1..-1] || '')
 					tag_query = tag_query_string.to_tag_query
 
-					time_from_date ||= Time.now.utc.strftime('%y-%m-%d')
-					time_from_time ||= Time.now.utc.strftime('%I:%M %p')
 					time_from = Time.parse("#{time_from_date} #{time_from_time} UTC")
-
-					time_span_unit ||= 'Weeks'
-					time_span_value ||= 2
-
 					time_span = case time_span_unit
 						when 'Minutes'
 							time_span_value.to_f * 60
@@ -134,24 +128,31 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 							time_from.to_f - time_from.months_ago(time_span_value.to_f).to_f
 						when 'Years'
 							time_from.to_f - time_from.years_ago(time_span_value.to_f).to_f
-					end
-					time_span = time_span.abs
+					end.abs
 
-					log.info "quering for tag sets: #{tag_query} (#{tag_query_string}): time span: #{time_span}"
+					log.info "quering for #{tag_query} from #{time_from} span #{time_span} seconds"
 					
 					send_page 'query', 
 						tag_query_string: tag_query_string, 
 						tag_query: tag_query,
-						time_span_value: time_span_value,
 						time_from_date: time_from_date,
 						time_from_time: time_from_time,
 						time_from: time_from,
+						time_span_value: time_span_value,
 						time_span_unit: time_span_unit,
 						time_span: time_span
 				end
 
-				on 'feed/query/(.*)', param?(:time_from, Time.now.utc.to_s), param?(:time_span, 60*60), param?(:granularity, 10) do |tag_expression, time_from, time_span, granularity|
+				on 'feed/query/(.*)', 
+					param?(:time_from, Time.now.utc.to_s), 
+					param?(:time_span, 60*60), 
+					param?(:granularity, 1) do |tag_expression, time_from, time_span, granularity|
 					time_from = Time.parse(time_from + ' UTC')
+					time_span = Float(time_span)
+					granularity = Float(granularity)
+
+					# limit output to 2000 samples
+					granularity = time_span / 2000 if time_span / granularity > 2000
 
 					query = DataSetQuery.new(tag_expression, time_from, time_span.to_f, granularity.to_f)
 					log.debug "sending query: #{query}"
@@ -175,6 +176,7 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						end
 
 						res.on_close do
+							#TODO: deregistration
 							#bus.deregister_on DataSet, request_id
 						end
 					end
