@@ -6,6 +6,7 @@
 * http://www.apache.org/licenses/LICENSE-2.0
 *
 */
+/*
 .datepicker {
 top: 0;
 left: 0;
@@ -16,7 +17,7 @@ margin-top: 1px;
 border-radius: 4px;
 /*.dow {
 border-top: 1px solid #ddd !important;
-}*/
+}
 }
 .datepicker:before {
 content: '';
@@ -42,6 +43,7 @@ left: 7px;
 .datepicker > div {
 display: none;
 }
+*/
 .datepicker table {
 width: 100%;
 margin: 0;

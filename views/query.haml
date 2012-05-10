@@ -8,19 +8,20 @@
         %input.span4.search-query{name: 'tag_query', type: 'text', placeholder: 'comma separated tags', value: tag_query_string}
         %label
           form
-        .input-append
-          %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date}>
-          %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
-          %button.now.btn{type: 'button'}>
-            now
-
+        %span
+          .input-append>
+            %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date}>
+          .input-prepend.input-append>
+            %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
+            %button.now.btn{type: 'button'}>= "now"
         %label
           span
-        .input-append
-          %input{name: 'time_span_value', type: 'text', style: 'width: 2em', value: time_span_value || 1}>
-          %select.input-small{name: 'time_span_unit'}>
-            - %w{ Minutes Hours Days Weeks Months Years }.each do |unit|
-              %option{selected: time_span_unit == unit}>= unit
+        %span
+          .input-append>
+            %input{name: 'time_span_value', type: 'text', style: 'width: 2em', value: time_span_value || 1}>
+            %select.input-small{name: 'time_span_unit'}>
+              - %w{ Minutes Hours Days Weeks Months Years }.each do |unit|
+                %option{selected: time_span_unit == unit}>= unit
 
         %button.btn.btn-primary{type: 'submit'}
           Query
