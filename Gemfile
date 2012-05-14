@@ -11,9 +11,10 @@ gem "cuba", "~> 3.0"
 gem "less", "~> 2.1"
 gem "haml", "~> 2.1"
 gem "tilt", "~> 1.3"
-
 gem "activesupport", "~> 3.0"
-gem "i18n", "~> 0.6"
+
+gem "sprockets", "~> 2.0"
+#gem "yui-compressor", "~> 0.9.6"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

@@ -31,6 +31,22 @@ module View
 	def curren_page
 		uri[root_uri.length..-1].split('/')[1]
 	end
+
+	def style(name)
+		(@styles ||= []).unshift name
+	end
+
+	def styles
+		@styles | []
+	end
+
+	def script(name)
+		(@scripts ||= []).unshift name
+	end
+
+	def scripts
+		@scripts | []
+	end
 end
 
 class String

@@ -1,42 +1,37 @@
+- style 'base-bundle'
+- script 'base-bundle'
+
 !!! 5
 %html{:lang => "en"}
   %head
     %meta{charset: "utf-8"}
     %meta{name: "viewport", content: "width=device-width, initial-scale=1.0"}
-    %link{href: root_uri('bootstrap', 'css', 'bootstrap.css'), rel: "stylesheet"}
+
+    - styles.each do |style|
+      %link{href: root_uri('assets', 'css', "#{style}.css"), rel: "stylesheet"}
+
     %style{type: "text/css"}
       :sass
         body
           padding-top: 60px
           padding-bottom: 40px
-    %link{href: root_uri('bootstrap', 'css', 'bootstrap-responsive.css'), rel: "stylesheet"}
-    %link{href: root_uri('bootstrap', 'css', 'datepicker.css'), rel: "stylesheet"}
-    %link{href: root_uri('bootstrap', 'css', 'timepicker.css'), rel: "stylesheet"}
+
+    - scripts.each do |script|
+      %script{src: root_uri('assets', 'js', "#{script}.js"), type: "text/javascript"}
+
     :plain
       <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
       <!--[if lt IE 9]>
         <script src='http://html5shim.googlecode.com/svn/trunk/html5.js'></script>
-        <script language="javascript" type="text/javascript" src="#{root_uri('js', 'html5.min.js')}"></script>
+        <script language="javascript" type="text/javascript" src="#{root_uri('assets', 'js', 'html5.min.js')}"></script>
       <![endif]-->
       <!--[if lte IE 8]>
-        <script language="javascript" type="text/javascript" src=#{root_uri('js', 'excanvas.min.js')}""></script>
+        <script language="javascript" type="text/javascript" src=#{root_uri('assets', 'js', 'excanvas.min.js')}""></script>
       <![endif]-->
     %link{rel: "shortcut icon", href: "favicon.ico"}
-    %link{rel: "apple-touch-icon-precomposed", sizes: "114x114", href: root_uri('bootstrap', 'ico', 'apple-touch-icon-114-precomposed.png')}
-    %link{rel: "apple-touch-icon-precomposed", sizes: "72x72", href: root_uri('bootstrap', 'ico', 'apple-touch-icon-72-precomposed.png')}
-    %link{rel: "apple-touch-icon-precomposed", href: root_uri('bootstrap', 'ico', 'apple-touch-icon-57-precomposed.png')}
     %title= title
 
   %body
-    %script{src: root_uri('js', 'jquery.min.js'), type: "text/javascript"}
-    %script{src: root_uri('bootstrap', 'js', 'bootstrap.min.js'), type: "text/javascript"}
-    %script{src: root_uri('bootstrap', 'js', 'bootstrap-datepicker.js'), type: "text/javascript"}
-    %script{src: root_uri('bootstrap', 'js', 'bootstrap-timepicker.js'), type: "text/javascript"}
-    %script{src: root_uri('js', 'jquery.eventsource.js'), type: "text/javascript"}
-    %script{src: root_uri('js', 'jquery.flot.min.js'), type: "text/javascript"}
-    %script{src: root_uri('js', 'jquery.flot.resize.min.js'), type: "text/javascript"}
-    %script{src: root_uri('js', 'jquery.flot.stack.min.js'), type: "text/javascript"}
-
     .navbar.navbar-fixed-top
       .navbar-inner
         .container

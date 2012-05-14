@@ -21,7 +21,8 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'cli'
 require 'ip'
 require 'cuba'
-require "cuba/render"
+require 'cuba/render'
+require 'sprockets'
 require 'dms-web-application'
 require 'time'
 require 'active_support/core_ext'
@@ -88,6 +89,12 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 			end
 
 			on get do
+				on 'assets' do
+					sprockets = Sprockets::Environment.new
+					sprockets.append_path 'assets'
+					run sprockets
+				end
+
 				on root do
 					go_to 'dashboard'
 				end
