@@ -188,16 +188,6 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 						end
 					end
 				end
-
-				# serve bootstrap files
-				on 'bootstrap' do
-					run Rack::File.new(Pathname.new('views') + 'bootstrap')
-				end
-
-				# serve jquery and plugins
-				on 'js' do
-					run Rack::File.new(Pathname.new('views') + 'js')
-				end
 			end
 		end
 
