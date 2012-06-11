@@ -32,6 +32,7 @@ require 'dms-web-application/error_reporter'
 require 'dms-web-application/dashboard'
 require 'dms-web-application/query'
 require 'dms-web-application/feed'
+require 'dms-web-application/server_time'
 
 VERSION = (Pathname.new(__FILE__).dirname + '../VERSION').read
 
@@ -92,6 +93,10 @@ Program::Daemon.new('DMS Web Application', VERSION) do
 				on 'feed' do
 					Feed.settings[:program_id] = settings.program_id
 					run Feed
+				end
+
+				on 'server_time' do
+					run ServerTime
 				end
 			end
 		end
