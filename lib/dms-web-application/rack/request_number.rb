@@ -30,4 +30,3 @@ module Rack
 	end
 end
 
-

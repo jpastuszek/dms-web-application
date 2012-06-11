@@ -16,7 +16,11 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 module Navigation
+	class CantDetermineRootError < RuntimeError
+	end
+
 	def root_uri(*parts)
+		raise CantDetermineRootError, 'no ROOT_SCRIPT_NAME env defined, please use Rack::RootScriptName middleware' unless env.has_key? 'ROOT_SCRIPT_NAME'
 		build_uri(env['ROOT_SCRIPT_NAME'], *parts)
 	end
 

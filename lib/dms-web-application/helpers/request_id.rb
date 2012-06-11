@@ -16,12 +16,14 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 module RequestID
-	def request_id
-		"#{settings[:program_id]}[#{env['request.number']}]"
+	class CantBuildRequestIDError < RuntimeError
 	end
 
-	def self.setup(cuba)
-		cuba.use Rack::RequestNumber
+	def request_id
+		raise CantBuildRequestIDError, 'missing settings[:program_id], set it to your program UUID' unless settings.has_key? :program_id
+		raise CantBuildRequestIDError, 'missing env["request.number"], use Rack::RequestNumber middleware' unless env.has_key? 'request.number'
+
+		p "#{settings[:program_id]}[#{env['request.number']}]"
 	end
 end
 

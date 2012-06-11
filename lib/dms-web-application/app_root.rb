@@ -15,13 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
-module ErrorMatcher
-	def error(klass)
-		env["ERROR"].is_a? klass
-	end
 
-	def error?
-		env.has_key? "ERROR"
+require 'cuba'
+
+module AppRoot
+	def self.setup(app)
+		require_relative 'rack/core_logger'
+		require_relative 'rack/root_script_name'
+		require_relative 'rack/request_number'
+
+		app.use Rack::CoreLogger
+		app.use Rack::RootScriptName
+		app.use Rack::RequestNumber
 	end
 end
 
