@@ -16,3 +16,5 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+require 'dms-core'
+

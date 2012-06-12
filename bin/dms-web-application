@@ -22,7 +22,6 @@ require 'cli'
 require 'ip'
 require 'cuba'
 require 'sprockets'
-require 'dms-core'
 
 require 'dms-web-application/rack/handler'
 

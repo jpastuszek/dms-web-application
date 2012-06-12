@@ -26,15 +26,34 @@ class ServerTime < Cuba
 	self.plugin Json
 
 	self.define do
-		on true do
+		on 'utc' do
 			now = Time.now.utc
-			send_json(
-				time: now.strftime('%I:%M %p'),
-				date: now.strftime('%y-%m-%d'),
-				datetime: now.to_s,
-				unix_timestamp: now.to_f,
-				javascript_timestamp: (now.to_f * 1000).to_i
-			)
+
+			on 'time' do
+				send_json time: now.strftime('%I:%M %p')
+			end
+
+			on 'date' do
+				send_json date: now.strftime('%y-%m-%d')
+			end
+
+			on 'zone' do
+				send_json zone: 'UTC'
+			end
+
+			on 'timestamp' do
+				on 'unix' do
+					send_json unix_timestamp: now.to_f
+				end
+
+				on 'javascript' do
+					send_json javascript_timestamp: (now.to_f * 1000).to_i
+				end
+			end
+
+			on true do
+				send_json datetime: now.strftime('%y-%m-%d %I:%M %p %Z')
+			end
 		end
 	end
 end

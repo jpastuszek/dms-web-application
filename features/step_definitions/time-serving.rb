@@ -15,25 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'bundler'
-begin
-  Bundler.setup(:default, :development)
-rescue Bundler::BundlerError => e
-  $stderr.puts e.message
-  $stderr.puts "Run `bundle install` to install missing gems"
-  exit e.status_code
-end
-
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/../../lib')
-require 'dms-web-application'
-
-require 'rspec/expectations'
-require 'capybara/cucumber'
-require 'capybara/json'
-include Capybara::Json
-
-require 'cuba'
-
-autoload :AppRoot, 'dms-web-application/app_root.rb'
-autoload :ServerTime, 'dms-web-application/server_time.rb'
 
