@@ -27,14 +27,14 @@ Feature: Serving server time
 		Then I should get datetime value matching /^\d\d-\d\d-\d\d \d\d:\d\d (AM|PM) UTC$/
 
 	@rack_test_json
-	Scenario: UTC UNIX timestamp
+	Scenario: UNIX timestamp
 		Given ServerTime module mounted under server_time
-		When I visit /server_time/utc/timestamp/unix
+		When I visit /server_time/timestamp/unix
 		Then I should get unix_timestamp value matching /^\d+\.\d+$/
 
 	@rack_test_json
-	Scenario: UTC UNIX timestamp
+	Scenario: UNIX timestamp
 		Given ServerTime module mounted under server_time
-		When I visit /server_time/utc/timestamp/javascript
+		When I visit /server_time/timestamp/javascript
 		Then I should get javascript_timestamp value matching /^\d+$/
 

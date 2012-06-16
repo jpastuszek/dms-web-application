@@ -34,6 +34,7 @@
         this.template = this.options.template || this.template;
         this.open = false;
         this.init();
+				this.updateFromElementVal();
     };
 
     Timepicker.prototype = {
@@ -41,11 +42,10 @@
         constructor: Timepicker
 
         , init: function () {
-
             this.$element
-                .on('focus', $.proxy(this.show, this))
-				.on('blur', $.proxy(this.hide, this))
-                .on('keyup', $.proxy(this.updateFromElementVal, this))
+							.on('focus', $.proxy(this.show, this))
+							.on('blur', $.proxy(this.hide, this))
+							.on('keyup', $.proxy(this.updateFromElementVal, this))
             ;
             
             switch(this.options.template) {
@@ -58,10 +58,8 @@
             }  
 
             this.$widget.on('click', $.proxy(this.click, this));
-			this.$widget.on('mousedown', $.proxy(this.mousedown, this));
+						this.$widget.on('mousedown', $.proxy(this.mousedown, this));
             //$('html').on('click.timepicker.data-api', $.proxy(this.hide, this));
-
-            this.setDefaultTime(this.options.defaultTime || this.defaultTime);
         }
 
         , show: function(e) {
@@ -111,7 +109,7 @@
             return this;
         }
 
-        , setValues: function(time) {
+        , setTimeFromString: function(time) {
             var meridian, match = time.match(/(AM|PM)/i);
             if (match) {
                 meridian = match[1];
@@ -122,43 +120,32 @@
             this.meridian = meridian;
             this.hour = parseInt(timeArray[0].replace(/^0/, ''));
             this.minute = parseInt(timeArray[1].replace(/^0/, ''));
+						this.update();
         }
 
-		, setCurrentTime: function() {
-			var dTime = new Date();
-			var hours = dTime.getHours();
-			var minutes = Math.floor(dTime.getMinutes() / this.minuteStep) * this.minuteStep;
+				, setTimeFromDate: function(dTime) {
+					console.log("setting time from date: " + dTime);
+					console.log(this);
 
-			var meridian = "AM";
-			if (hours === 0) {
-				hours = 12;
-			} else if (hours > 12) {
-				hours = hours - 12;
-				meridian = "PM";
-			} else {
-			   meridian = "AM";
-			}
+					var hours = dTime.getHours();
+					var minutes = Math.floor(dTime.getMinutes() / this.minuteStep) * this.minuteStep;
 
-			this.hour = hours;
-			this.minute = minutes;
-			this.meridian = meridian;
-		}
+					var meridian = "AM";
+					if (hours === 0) {
+						hours = 12;
+					} else if (hours > 12) {
+						hours = hours - 12;
+						meridian = "PM";
+					} else {
+						 meridian = "AM";
+					}
 
-		, reset: function() {
-			this.setCurrentTime();
-			this.update();
-		}
+					this.hour = hours;
+					this.minute = minutes;
+					this.meridian = meridian;
 
-        , setDefaultTime: function(defaultTime){
-            if (defaultTime) {
-                if (defaultTime === 'current') {
-					this.setCurrentTime();
-                } else {
-                    this.setValues(defaultTime);
-                }
-                this.update();
-            }
-        }
+					this.update();
+				}
 
         , formatTime: function(hour, minute, meridian) {
             hour = hour < 10 ? '0' + hour : hour;
@@ -167,18 +154,12 @@
             return hour + ':' + minute + ' ' + meridian;
         }
 
-        , getTime: function() {
+        , getTimeString: function() {
             return this.formatTime(this.hour, this.minute, this.meridian);
         }
 
-        , setTime: function(time) {
-            this.setValues(time);
-            this.update();
-        }
-
         , updateElement: function() {
-            var time = this.getTime();
-
+            var time = this.getTimeString();
             this.$element.val(time);
         }
 
@@ -197,8 +178,7 @@
         , updateFromElementVal: function () {
             var time = this.$element.val();
             if (time) {
-                this.setValues(time);
-                this.updateWidget();
+                this.setTimeFromString(time);
             }
         }
 
@@ -258,33 +238,40 @@
             this.update();
         }
 
-		, mousedown: function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		}
+				, mousedown: function(e){
+					e.stopPropagation();
+					e.preventDefault();
+				}
     };
 
 
     /* TIMEPICKER PLUGIN DEFINITION
      * =========================== */
 
-    $.fn.timepicker = function (option) {
+    $.fn.timepicker = function(options) {
+				// capture optional method arguments
+				var args = Array.prototype.slice.call(arguments, 1);
+
         return this.each(function () {
-            var $this = $(this)
-            , data = $this.data('timepicker')
-            , options = typeof option == 'object' && option;
+            var $this = $(this);
+						var data = $this.data('timepicker');
+
+						// create new object
             if (!data) {
-                $this.data('timepicker', (data = new Timepicker(this, options)));
+                return $this.data('timepicker', (data = new Timepicker(this, options)));
             }
-            if (typeof option == 'string') {
-                data[option]();
-            }
+
+						// call method instead
+						if (data[options]) {
+								return data[options].apply(data, args);
+						} else {
+								$.error( 'Method ' + options + ' does not exist on jQuery.timepicker' );
+						} 
         })
     }
 
     $.fn.timepicker.defaults = {
-      minuteStep: 15
-    , defaultTime: 'current'
+      minuteStep: 1
     , template: 'dropdown'
     , dropdownTemplate: '<div class="bootstrap-timepicker dropdown-menu">'+
                     '<table>'+
@@ -343,3 +330,4 @@
 
     $.fn.timepicker.Constructor = Timepicker
 }(window.jQuery);
+

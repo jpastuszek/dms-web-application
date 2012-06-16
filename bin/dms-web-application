@@ -23,6 +23,7 @@ require 'ip'
 require 'cuba'
 require 'sprockets'
 
+require 'dms-web-application'
 require 'dms-web-application/rack/handler'
 
 require 'dms-web-application/app_root'

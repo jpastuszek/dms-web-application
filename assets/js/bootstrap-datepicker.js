@@ -120,6 +120,13 @@
 			this.viewDate = new Date(this.date);
 			this.fill();
 		},
+
+		setDateFromString: function(date) {
+				this.date = DPGlobal.parseDate(date, this.format);
+				this.viewDate = new Date(this.date);
+				this.fill();
+				this.setValue();
+		},
 		
 		fillDow: function(){
 			var dowCnt = this.weekStart;
@@ -272,16 +279,26 @@
 		}
 	};
 	
-	$.fn.datepicker = function ( option ) {
+	$.fn.datepicker = function(options) {
+		// capture optional method arguments
+		var args = Array.prototype.slice.call(arguments, 1);
+
 		return this.each(function () {
-			var $this = $(this),
-				data = $this.data('datepicker'),
-				options = typeof option == 'object' && option;
-			if (!data) {
-				$this.data('datepicker', (data = new Datepicker(this, $.extend({}, $.fn.datepicker.defaults,options))));
-			}
-			if (typeof option == 'string') data[option]();
-		});
+				var $this = $(this);
+				var data = $this.data('datepicker');
+
+				// create new object
+				if (!data) {
+						return $this.data('datepicker', (data = new Datepicker(this, options)));
+				}
+
+				// call method instead
+				if (data[options]) {
+						return data[options].apply(data, args);
+				} else {
+						$.error( 'Method ' + options + ' does not exist on jQuery.datepicker' );
+				} 
+		})
 	};
 
 	$.fn.datepicker.defaults = {
@@ -377,7 +394,7 @@
 						'</thead>',
 		contTemplate: '<tbody><tr><td colspan="7"></td></tr></tbody>'
 	};
-	DPGlobal.template = '<div class="datepicker dropdown-menu">'+
+	DPGlobal.template = '<div class="bootstrap-datepicker dropdown-menu">'+
 							'<div class="datepicker-days">'+
 								'<table class=" table-condensed">'+
 									DPGlobal.headTemplate+

@@ -7,7 +7,7 @@
 *
 */
 /*
-.datepicker {
+.bootstrap-datepicker {
 top: 0;
 left: 0;
 padding: 4px;
@@ -19,7 +19,7 @@ border-radius: 4px;
 border-top: 1px solid #ddd !important;
 }
 }
-.datepicker:before {
+.bootstrap-datepicker:before {
 content: '';
 display: inline-block;
 border-left: 7px solid transparent;
@@ -30,7 +30,7 @@ position: absolute;
 top: -7px;
 left: 6px;
 }
-.datepicker:after {
+.bootstrap-datepicker:after {
 content: '';
 display: inline-block;
 border-left: 6px solid transparent;
@@ -40,15 +40,15 @@ position: absolute;
 top: -6px;
 left: 7px;
 }
-.datepicker > div {
+.bootstrap-datepicker > div {
 display: none;
 }
 */
-.datepicker table {
+.bootstrap-datepicker table {
 width: 100%;
 margin: 0;
 }
-.datepicker td, .datepicker th {
+.bootstrap-datepicker td, .bootstrap-datepicker th {
 text-align: center;
 width: 20px;
 height: 20px;
@@ -56,14 +56,14 @@ height: 20px;
 -moz-border-radius: 4px;
 border-radius: 4px;
 }
-.datepicker td.day:hover {
+.bootstrap-datepicker td.day:hover {
 background: #eeeeee;
 cursor: pointer;
 }
-.datepicker td.old, .datepicker td.new {
+.bootstrap-datepicker td.old, .bootstrap-datepicker td.new {
 color: #999999;
 }
-.datepicker td.active, .datepicker td.active:hover {
+.bootstrap-datepicker td.active, .bootstrap-datepicker td.active:hover {
 background-color: #006dcc;
 background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
 background-image: -ms-linear-gradient(top, #0088cc, #0044cc);
@@ -79,25 +79,25 @@ filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
 color: #fff;
 text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
-.datepicker td.active:hover,
-.datepicker td.active:hover:hover,
-.datepicker td.active:active,
-.datepicker td.active:hover:active,
-.datepicker td.active.active,
-.datepicker td.active:hover.active,
-.datepicker td.active.disabled,
-.datepicker td.active:hover.disabled,
-.datepicker td.active[disabled],
-.datepicker td.active:hover[disabled] {
+.bootstrap-datepicker td.active:hover,
+.bootstrap-datepicker td.active:hover:hover,
+.bootstrap-datepicker td.active:active,
+.bootstrap-datepicker td.active:hover:active,
+.bootstrap-datepicker td.active.active,
+.bootstrap-datepicker td.active:hover.active,
+.bootstrap-datepicker td.active.disabled,
+.bootstrap-datepicker td.active:hover.disabled,
+.bootstrap-datepicker td.active[disabled],
+.bootstrap-datepicker td.active:hover[disabled] {
 background-color: #0044cc;
 }
-.datepicker td.active:active,
-.datepicker td.active:hover:active,
-.datepicker td.active.active,
-.datepicker td.active:hover.active {
+.bootstrap-datepicker td.active:active,
+.bootstrap-datepicker td.active:hover:active,
+.bootstrap-datepicker td.active.active,
+.bootstrap-datepicker td.active:hover.active {
 background-color: #003399 \9;
 }
-.datepicker td span {
+.bootstrap-datepicker td span {
 display: block;
 width: 47px;
 height: 54px;
@@ -109,10 +109,10 @@ cursor: pointer;
 -moz-border-radius: 4px;
 border-radius: 4px;
 }
-.datepicker td span:hover {
+.bootstrap-datepicker td span:hover {
 background: #eeeeee;
 }
-.datepicker td span.active {
+.bootstrap-datepicker td span.active {
 background-color: #006dcc;
 background-image: -moz-linear-gradient(top, #0088cc, #0044cc);
 background-image: -ms-linear-gradient(top, #0088cc, #0044cc);
@@ -128,26 +128,26 @@ filter: progid:DXImageTransform.Microsoft.gradient(enabled = false);
 color: #fff;
 text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
-.datepicker td span.active:hover,
-.datepicker td span.active:active,
-.datepicker td span.active.active,
-.datepicker td span.active.disabled,
-.datepicker td span.active[disabled] {
+.bootstrap-datepicker td span.active:hover,
+.bootstrap-datepicker td span.active:active,
+.bootstrap-datepicker td span.active.active,
+.bootstrap-datepicker td span.active.disabled,
+.bootstrap-datepicker td span.active[disabled] {
 background-color: #0044cc;
 }
-.datepicker td span.active:active, .datepicker td span.active.active {
+.bootstrap-datepicker td span.active:active, .bootstrap-datepicker td span.active.active {
 background-color: #003399 \9;
 }
-.datepicker td span.old {
+.bootstrap-datepicker td span.old {
 color: #999999;
 }
-.datepicker th.switch {
+.bootstrap-datepicker th.switch {
 width: 145px;
 }
-.datepicker thead tr:first-child th {
+.bootstrap-datepicker thead tr:first-child th {
 cursor: pointer;
 }
-.datepicker thead tr:first-child th:hover {
+.bootstrap-datepicker thead tr:first-child th:hover {
 background: #eeeeee;
 }
 .input-append.date .add-on i, .input-prepend.date .add-on i {

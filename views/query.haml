@@ -30,27 +30,31 @@
           Query
 
       :javascript
+        var setDateFromServer = function() {
+          $.ajax({
+            url: '#{root_uri('server_time', 'utc', 'time')}',
+            cache: false
+          }).done(function(data) {
+            $('.timepicker').timepicker('setTimeFromString', data.time)
+          })
+
+          $.ajax({
+            url: '#{root_uri('server_time', 'utc', 'date')}',
+            cache: false
+          }).done(function(data) {
+            $('.datepicker').datepicker('setDateFromString', data.date)
+          })
+        }
+
         $('.datepicker').datepicker({
             format: 'yy-mm-dd'
         })
-        $('.timepicker').timepicker({
-          defaultTime: '#{time_from_time}',
-          minuteStep: 1,
-          template: 'dropdown'
-        })
+
+        $('.timepicker').timepicker()
+
         $('.now').on('click', function() {
-          //console.log($('.timepicker').val('12:12 AM'))
-
-          //$('.timepicker').val('12:12 AM')
-          //$('.timepicker').timepicker('updateFromElementVal')
-
-          $('.timepicker').timepicker('reset')
-          $('.datepicker').datepicker('fill')
-
-          //$('.timepicker').timepicker('setDefaultTime', '12:12 AM')
-          //$('.timepicker').timepicker('setTime', '12:12 AM')
+          setDateFromServer();
         })
-
 
   - unless tag_query.empty?
     .row
