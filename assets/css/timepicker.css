@@ -7,4 +7,4 @@
 .bootstrap-timepicker table{width:6em;margin:0;}
 .bootstrap-timepicker td,.bootstrap-timepicker th{text-align:center;height:20px;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;}
 .bootstrap-timepicker td.separator{width:1px;}
-.bootstrap-timepicker td a{border:1px transparent solid;display:block;margin:4px;padding:4px 0;}.bootstrap-timepicker td a:hover{background-color:#eee;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;border-color:#ddd;}
+.bootstrap-timepicker td a{border:1px transparent solid;display:block;margin:4px;padding:4px 0;}.bootstrap-timepicker td a:hover{background-color:#eee;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px}
