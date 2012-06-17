@@ -6,7 +6,6 @@
 * http://www.apache.org/licenses/LICENSE-2.0
 *
 */
-/*
 .bootstrap-datepicker {
 top: 0;
 left: 0;
@@ -15,10 +14,12 @@ margin-top: 1px;
 -webkit-border-radius: 4px;
 -moz-border-radius: 4px;
 border-radius: 4px;
+}
 /*.dow {
 border-top: 1px solid #ddd !important;
 }
 }
+*/
 .bootstrap-datepicker:before {
 content: '';
 display: inline-block;
@@ -40,6 +41,7 @@ position: absolute;
 top: -6px;
 left: 7px;
 }
+/*
 .bootstrap-datepicker > div {
 display: none;
 }
