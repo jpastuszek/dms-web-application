@@ -42,7 +42,7 @@ class ServerTime < Cuba
 			now = Time.now.utc
 
 			on 'time' do
-				send_json time: now.strftime('%I:%M %p')
+				send_json time: now.strftime('%H:%M')
 			end
 
 			on 'date' do
@@ -54,7 +54,7 @@ class ServerTime < Cuba
 			end
 
 			on true do
-				send_json datetime: now.strftime('%y-%m-%d %I:%M %p %Z')
+				send_json datetime: now.strftime('%y-%m-%d %H:%M %Z')
 			end
 		end
 	end

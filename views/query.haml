@@ -13,9 +13,9 @@
           form
         %span
           .input-append>
-            %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 5em', value: time_from_date}>
+            %input.datepicker{name: 'time_from_date', type: 'text', style: 'width: 4.5em', value: time_from_date}>
           .input-prepend.input-append>
-            %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 5em', value: time_from_time}>
+            %input.timepicker{name: 'time_from_time', type: 'text', style: 'width: 3em', value: time_from_time}>
             %button.now.btn{type: 'button'}>= "now"
         %label
           span
@@ -66,9 +66,9 @@
             - if set_no + 1 < tag_query.length
               end
           from
-          %strong= time_from.utc.strftime('%Y-%m-%d %I:%M %p') + ' UTC'
+          %strong= time_from.utc.strftime('%Y-%m-%d %H:%M') + ' UTC'
           back to 
-          %strong= (time_from - time_span).utc.strftime('%Y-%m-%d %I:%M %p') + ' UTC'
+          %strong= (time_from - time_span).utc.strftime('%Y-%m-%d %H:%M') + ' UTC'
 
 
 - tag_query.each_with_index do |tag_expression, set_no|
@@ -110,7 +110,7 @@
               $.plot($("#graph_#{set_no}" + graph_no), series, {
                     xaxis: {
                       mode: "time",
-                      timeformat: "%y/%m/%d %H:%M %P",
+                      timeformat: "%y/%m/%d %H:%M",
                       min: data.time_start,
                       max: data.time_end
                     },

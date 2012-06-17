@@ -27,7 +27,7 @@ class Query < Cuba
 	self.define do
 		on true, 
 			param?('time_from_date', Time.now.utc.strftime('%y-%m-%d')), 
-			param?('time_from_time', Time.now.utc.strftime('%I:%M %p')), 
+			param?('time_from_time', Time.now.utc.strftime('%H:%M')), 
 			param?('time_span_value', 2), 
 			param?('time_span_unit', 'Weeks') do |time_from_date, time_from_time, time_span_value, time_span_unit|
 			# handle form submit
