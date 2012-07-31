@@ -62,7 +62,7 @@ module Rack
 							'rack.run_once' => false,
 							'REQUEST_METHOD' => headers.delete('METHOD'),
 							'SCRIPT_NAME' => Rack::Utils.unescape(script_name),
-							'PATH_INFO' => Rack::Utils.unescape(headers.delete('PATH')[script_name.length..-1]), 
+							'PATH_INFO' => Rack::Utils.unescape(headers.delete('PATH')[script_name.length..-1] || ''), 
 							'QUERY_STRING' => headers.delete('QUERY') || ''
 						}
 						@env['SERVER_NAME'], @env['SERVER_PORT'] = headers['host'].split(':', 2)
