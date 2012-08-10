@@ -2,6 +2,7 @@
  * Bootstrap/JQuery
  *= require js/bootstrap-datepicker
  *= require js/bootstrap-timepicker
+ *= require js/bootstrap-numberpicker
  *
  * EventSource
  *= require js/jquery.eventsource

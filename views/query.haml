@@ -21,7 +21,7 @@
           span
         %span
           .input-append>
-            %input{name: 'time_span_value', type: 'text', style: 'width: 2em', value: time_span_value || 1}>
+            %input.numberpicker{name: 'time_span_value', type: 'text', style: 'width: 2em', value: time_span_value || 1}>
             %select.input-small{name: 'time_span_unit'}>
               - %w{ Minutes Hours Days Weeks Months Years }.each do |unit|
                 %option{selected: time_span_unit == unit}>= unit
@@ -50,8 +50,8 @@
           format: 'yy-mm-dd',
           weekStart: 1
         })
-
         $('.timepicker').timepicker()
+        $('.numberpicker').numberpicker()
 
         $('.now').on('click', function() {
           setDateFromServer();
