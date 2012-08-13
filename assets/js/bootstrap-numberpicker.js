@@ -2,6 +2,7 @@
 	var Numberpicker = function(element, options) {
 		this.element = $(element);
 		this.options = $.extend({}, $.fn.numberpicker.defaults, options);
+		this.initVal = 0;
 
 		this.element.on({
 			focus: $.proxy(this.show, this),
@@ -19,12 +20,13 @@
 			e.stopPropagation();
 			e.preventDefault();
 
+			this.updateFromInput();
+			this.initVal = this.getElementVal();
+
 			this.element.trigger('show');
 
 			this.place();
 			$(window).on('resize', $.proxy(this.place, this));
-
-			this.updateFromInput();
 
 			this.widget.show();
 		},
@@ -35,15 +37,24 @@
 			$(window).off('resize', this.place);
 
 			this.element.trigger('hide');
+
+			this.updateToInput();
 		},
 
 		getElementVal: function() {
-			return this.element.val();
+			return parseInt(this.element.val()) || this.initVal;
+		},
+
+		getVal: function() {
+			return parseInt(this.widget.find('td.bootstrap-numberpicker-number').text());
 		},
 
 		updateFromInput: function(e) {
-			console.log('update');
-			this.widget.find('td.bootstrap-numberpicker-number').text(this.getElementVal()).end();
+			this.widget.find('td.bootstrap-numberpicker-number').text(this.getElementVal());
+		},
+
+		updateToInput: function(e) {
+			this.element.val(this.getVal());
 		},
 
 		place: function(e) {
