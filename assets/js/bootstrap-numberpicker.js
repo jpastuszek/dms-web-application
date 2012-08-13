@@ -1,16 +1,21 @@
 !function($) {
 	var Numberpicker = function(element, options) {
-		this.element = $(element);
 		this.options = $.extend({}, $.fn.numberpicker.defaults, options);
-		this.initVal = 0;
+		this.initVal = this.options.min;
 
+		this.element = $(element);
 		this.element.on({
 			focus: $.proxy(this.show, this),
 			blur: $.proxy(this.hide, this),
 			keyup: $.proxy(this.updateFromInput, this)
 		});
 
-		this.widget = $(this.options.template).appendTo('body');
+		this.picker = $(this.options.template).appendTo('body');
+		this.picker.on({
+			click: $.proxy(this.click, this),
+			mousedown: $.proxy(this.mousedown, this)
+		});
+		this.value = this.picker.find('td.bootstrap-numberpicker-number');
 	};
 
 	Numberpicker.prototype = {
@@ -28,11 +33,11 @@
 			this.place();
 			$(window).on('resize', $.proxy(this.place, this));
 
-			this.widget.show();
+			this.picker.show();
 		},
 
 		hide: function(e) {
-			this.widget.hide();
+			this.picker.hide();
 
 			$(window).off('resize', this.place);
 
@@ -41,16 +46,28 @@
 			this.updateToInput();
 		},
 
+		sanitVal: function(val) {
+			if (isNaN(val))
+				val = this.initVal;
+			if (val < this.options.min)
+				val = this.options.min;
+			return val;
+		},
+
 		getElementVal: function() {
-			return parseInt(this.element.val()) || this.initVal;
+			return this.sanitVal(parseInt(this.element.val()));
 		},
 
 		getVal: function() {
-			return parseInt(this.widget.find('td.bootstrap-numberpicker-number').text());
+			return this.sanitVal(parseInt(this.value.text()));
+		},
+
+		setVal: function(val) {
+			this.value.text(val);
 		},
 
 		updateFromInput: function(e) {
-			this.widget.find('td.bootstrap-numberpicker-number').text(this.getElementVal());
+			this.value.text(this.getElementVal());
 		},
 
 		updateToInput: function(e) {
@@ -59,10 +76,36 @@
 
 		place: function(e) {
 			var offset = this.element.offset();
-			this.widget.css({
+			this.picker.css({
 				top: offset.top + this.element.outerHeight(),
 				left: offset.left
 			});
+		},
+
+		click: function(e) {
+			console.log('click');
+
+			e.stopPropagation();
+			e.preventDefault();
+
+			var action = $(e.target).closest('a').data('action');
+			if (action) {
+				this[action]();
+				this.updateToInput();
+			}
+		},
+
+		mousedown: function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+		},
+
+		increment: function(e) {
+			this.setVal(this.sanitVal(this.getVal() + 1));
+		},
+
+		decrement: function(e) {
+			this.setVal(this.sanitVal(this.getVal() - 1));
 		}
 	};
 
@@ -101,7 +144,9 @@
 					'<td><a href="#" data-action="decrement"><i class="icon-chevron-down"></i></a></td>'+
 				'</tr>'+
 			'</table>'+
-		'</div>'
+		'</div>',
+
+		min: 1
 	}
 
 	$.fn.numberpicker.Constructor = Numberpicker;
