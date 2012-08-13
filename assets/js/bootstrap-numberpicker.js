@@ -7,7 +7,8 @@
 		this.element.on({
 			focus: $.proxy(this.show, this),
 			blur: $.proxy(this.hide, this),
-			keyup: $.proxy(this.updateFromInput, this)
+			keyup: $.proxy(this.updateFromInput, this),
+			keydown: $.proxy(this.handleKey, this)
 		});
 
 		this.picker = $(this.options.template).appendTo('body');
@@ -83,15 +84,12 @@
 		},
 
 		click: function(e) {
-			console.log('click');
-
 			e.stopPropagation();
 			e.preventDefault();
 
 			var action = $(e.target).closest('a').data('action');
 			if (action) {
 				this[action]();
-				this.updateToInput();
 			}
 		},
 
@@ -102,10 +100,26 @@
 
 		increment: function(e) {
 			this.setVal(this.sanitVal(this.getVal() + 1));
+			this.updateToInput();
 		},
 
 		decrement: function(e) {
 			this.setVal(this.sanitVal(this.getVal() - 1));
+			this.updateToInput();
+		},
+
+		handleKey: function(e) {
+			arrow = {up: 38, down: 40 };
+			switch (e.which) {
+			case arrow.up:
+				this.increment();
+				return false;
+				break;
+			case arrow.down:
+				this.decrement();
+				return false;
+				break;
+			}
 		}
 	};
 
