@@ -6,6 +6,9 @@ Feature: Feed query event source
 		Given console connector publisher ipc:///tmp/dms-console-connector-pub, subscriber ipc:///tmp/dms-console-connector-sub
 		Given Feed module setting program_id set to 'feed_query_test' string
 		Given Feed module mounted under feed
+		Given dms-console-connector-stub program
+		And stub console connector test set 'static'
+		And it is started
 
 	@feed_query
 	Scenario: API provides padding data for browsers that buffer data
