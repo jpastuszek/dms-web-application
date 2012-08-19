@@ -20,17 +20,16 @@ Given /(.*) module setting (.*) set to '(.*)' string/ do |mod, setting, value|
 end
 
 Given /(.*) module mounted under (.*)/ do |mod, prefix|
-	unless Capybara.app
-		app = Class.new(Cuba)
-		app.plugin AppRoot
-		Capybara.app = app
-	end
+	app = Class.new(Cuba)
+	app.plugin AppRoot
 
-	Capybara.app.define do
+	app.define do
 		on prefix do
 			run eval mod
 		end
 	end
+
+	Capybara.app = app
 end
 
 Given /console connector publisher (.*), subscriber (.*)/ do |internal_console_publisher, internal_console_subscriber|
