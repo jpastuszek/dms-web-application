@@ -82,7 +82,7 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 									component_data 'free', time, total - used
 								end
 							end
-							p ds
+							log.debug "sending DataSet: #{ds}"
 							internal_bus.send ds, topic: topic
 							sleep settings.delay
 						end
@@ -95,7 +95,7 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 									component_data 'free', time, 2
 								end
 							end
-							p ds
+							log.debug "sending DataSet: #{ds}"
 							internal_bus.send ds, topic: topic
 						end
 					else

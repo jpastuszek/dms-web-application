@@ -20,21 +20,23 @@ Given /(.*) module setting (.*) set to '(.*)' string/ do |mod, setting, value|
 end
 
 Given /(.*) module mounted under (.*)/ do |mod, prefix|
-	app = Class.new(Cuba)
-	app.plugin AppRoot
-	app.define do
+	unless Capybara.app
+		app = Class.new(Cuba)
+		app.plugin AppRoot
+		Capybara.app = app
+	end
+
+	Capybara.app.define do
 		on prefix do
 			run eval mod
 		end
 	end
-
-	Capybara.app = app
 end
 
 Given /console connector publisher (.*), subscriber (.*)/ do |internal_console_publisher, internal_console_subscriber|
 	ZeroMQService.socket(:bus) do |zmq|
 		zmq.bus_connect(internal_console_publisher, internal_console_subscriber, {hwm: 10, linger: 0})
-	end
+	end unless ZeroMQService.socket(:bus)
 end
 
 When /I visit (.*)/ do |uri|
@@ -46,5 +48,11 @@ Then /I should get (.*) value matching \/(.*)\// do |key, regexp|
 	body.should_not be_nil
 	body.should include(key)
 	body[key].to_s.should match(regexp)
+end
+
+Then /I expect (.*) console connector bus messages/ do |messages|
+	messages.to_i.times do
+		ZeroMQService.socket(:bus).receive!
+	end
 end
 

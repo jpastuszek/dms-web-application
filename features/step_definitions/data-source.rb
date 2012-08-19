@@ -22,3 +22,13 @@ Then /I should get (.*) bytes padding in first line/ do |padding_size|
 	source.lines.first.should match(/^:.{#{padding_size}}$/)
 end
 
+Then /I should get following JSON object in first message of ID '(.*)'/ do |message_id, json|
+	message = source.lines.map{|l| l.split(':', 2)}.select{|id, message| id == message_id}.first
+	message.should_not be_nil, "message of ID '#{message_id}' not found in: #{source}"
+
+	source_json = JSON.parse(message[1])
+
+	json = JSON.parse(json)
+	source_json.should == json
+end
+
