@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
+Given /(.*) module setting (.*) set to '(.*)' string/ do |mod, setting, value|
+	eval(mod).settings[setting.to_sym] = value
+end
+
 Given /(.*) module mounted under (.*)/ do |mod, prefix|
 	app = Class.new(Cuba)
 	app.plugin AppRoot
@@ -25,6 +29,12 @@ Given /(.*) module mounted under (.*)/ do |mod, prefix|
 	end
 
 	Capybara.app = app
+end
+
+Given /console connector publisher (.*), subscriber (.*)/ do |internal_console_publisher, internal_console_subscriber|
+	ZeroMQService.socket(:bus) do |zmq|
+		zmq.bus_connect(internal_console_publisher, internal_console_subscriber, {hwm: 10, linger: 0})
+	end
 end
 
 When /I visit (.*)/ do |uri|

@@ -35,5 +35,4 @@ include Capybara::Json
 require 'cuba'
 
 autoload :AppRoot, 'dms-web-application/app_root.rb'
-autoload :ServerTime, 'dms-web-application/server_time.rb'
 

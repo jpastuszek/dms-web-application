@@ -16,8 +16,14 @@
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 #
 module ConsoleBus
+	class NoConsoleBusError < RuntimeError
+		def initalize
+			super 'console bus connection socket not defined'
+		end
+	end
+
 	def bus
-		ZeroMQService.socket(:bus)
+		ZeroMQService.socket(:bus) or raise NoConsoleBusError
 	end
 
 	def poller

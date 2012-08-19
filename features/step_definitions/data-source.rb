@@ -14,16 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
-#
-module RequestID
-	class CantBuildRequestIDError < RuntimeError
-	end
 
-	def request_id
-		raise CantBuildRequestIDError, 'missing settings[:program_id], set it to your program UUID' unless settings.has_key? :program_id
-		raise CantBuildRequestIDError, 'missing env["request.number"], use Rack::RequestNumber middleware' unless env.has_key? 'request.number'
+autoload :Feed, 'dms-web-application/feed.rb'
 
-		"#{settings[:program_id]}[#{env['request.number']}]"
-	end
+Then /I should get (.*) bytes padding in first line/ do |padding_size|
+	source.should_not be_nil
+	source.lines.first.should match(/^:.{#{padding_size}}$/)
 end
 
