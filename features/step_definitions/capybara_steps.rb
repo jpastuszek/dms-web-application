@@ -15,3 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
+Given /(.*) Rack application setting (.*) set to (.*) string/ do |mod, setting, value|
+	eval(mod).settings[setting.to_sym] = value
+end
+
+Given /(.*) Rack application mounted under \/(.*)/ do |mod, prefix|
+	app = Class.new(Cuba)
+	app.plugin AppRoot
+
+	app.define do
+		on prefix do
+			run eval mod
+		end
+	end
+
+	Capybara.app = app
+end
+
+When /I visit (.*)/ do |uri|
+	visit uri
+end
+
+Then /I should get (.*) value matching \/(.*)\// do |key, regexp|
+	regexp = Regexp.new(regexp)
+	body.should_not be_nil
+	body.should include(key)
+	body[key].to_s.should match(regexp)
+end
+
