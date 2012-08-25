@@ -3,12 +3,13 @@ Feature: Feed query event source
 	The server offers EventSource API for quering data
 
 	Background:
-		Given console connector publisher ipc:///tmp/dms-console-connector-pub, subscriber ipc:///tmp/dms-console-connector-sub
-		Given Feed module setting program_id set to 'feed_query_test' string
-		Given Feed module mounted under feed
-		Given dms-console-connector-stub program
-		And stub console connector test set 'static'
-		And it is started
+		Given stub console connector test set static
+		And stub console connector is running
+
+		Given Feed module setting program_id set to feed_query_test string
+		And Feed module mounted under feed
+
+		Given ZeroMQ service bus is configured with console connector publisher address ipc:///tmp/dms-console-connector-pub and subscriber address ipc:///tmp/dms-console-connector-sub
 
 	@feed_query
 	Scenario: API provides padding data for browsers that buffer data

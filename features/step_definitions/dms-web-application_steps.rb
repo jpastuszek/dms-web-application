@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
-Given /(.*) module setting (.*) set to '(.*)' string/ do |mod, setting, value|
+Given /(.*) module setting (.*) set to (.*) string/ do |mod, setting, value|
 	eval(mod).settings[setting.to_sym] = value
 end
 

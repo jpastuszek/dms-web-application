@@ -14,6 +14,7 @@ gem "tilt", "~> 1.3"
 gem "activesupport", "~> 3.0"
 
 gem "sprockets", "~> 2.0"
+gem "ffi", "~> 1.0"
 #gem "yui-compressor", "~> 0.9.6"
 
 # Add dependencies to develop your gem here.
@@ -27,4 +28,5 @@ group :development do
   gem "bundler", "~> 1.1"
   gem "jeweler", "~> 1.8.3"
   gem "simplecov", ">= 0"
+  gem "daemon", "~> 1.0"
 end
