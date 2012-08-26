@@ -3,8 +3,8 @@ Feature: Feed query event source
 	The server offers EventSource API for quering data
 
 	Background:
-		Given stub console connector test set static
-		And stub console connector is running
+		Given dms-console-connector-stub test set static
+		And dms-console-connector-stub is running
 
 		Given Feed Rack application setting program_id set to feed_query_test string
 		And Feed Rack application mounted under /feed
