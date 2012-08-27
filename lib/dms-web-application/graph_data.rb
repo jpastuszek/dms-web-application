@@ -39,8 +39,8 @@ class GraphData
 		end
 	end
 
-	def self.from_data_set(title, value_unit, query, data_set)
-		self.new(title, value_unit, query.tag_expression, data_set.tag_set, data_set.time_from, data_set.time_span, data_set.component_data)
+	def self.from_data_set(title, value_unit, query_tag_expression, data_set)
+		self.new(title, value_unit, query_tag_expression, data_set.tag_set, data_set.time_from, data_set.time_span, data_set.component_data)
 	end
 
 	def to_json(a = nil)

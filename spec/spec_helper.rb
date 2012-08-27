@@ -22,6 +22,9 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec'
 require 'dms-web-application'
 
+require 'dms-web-application/graph_data'
+require 'dms-web-application/event_source'
+
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}

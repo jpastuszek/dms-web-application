@@ -59,7 +59,7 @@ class Feed < Cuba
 					graph_data = GraphData.from_data_set(
 							data_set.tag_set,
 							'Byte', 
-							query,
+							query.tag_expression,
 							data_set
 					)
 					graph_data.to_json.each_line do |json_line|

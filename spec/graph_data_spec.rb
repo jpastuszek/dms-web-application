@@ -19,7 +19,7 @@ require_relative 'spec_helper'
 
 describe GraphData do
 	subject do
-		GraphData.new('hello world', 'Bytes', Time.at(60), 20, {
+		GraphData.new('hello world', 'Bytes', 'query:test', 'test:data', Time.at(60), 20, {
 			free: [
 				[Time.at(4), 40],
 				[Time.at(3), 30],
@@ -36,7 +36,7 @@ describe GraphData do
 	end
 
 	it 'should convert to json' do
-		subject.to_json.should match_json "{\"title\":\"hello world\",\"value_unit\":\"Bytes\",\"value_min\":null,\"value_max\":null,\"time_start\":40000,\"time_end\":60000,\"series\":{\"free\":[[1000,10],[2000,20],[3000,30],[4000,40]],\"used\":[[1000,10],[2000,30],[3000,20],[4000,10]]}}"
+		subject.to_json.should match_json '{"title":"hello world","value_unit":"Bytes","query_tag_expression":"query:test","tag_set":"test:data","value_min":null,"value_max":null,"time_start":40000,"time_end":60000,"series":{"free":[[1000,10],[2000,20],[3000,30],[4000,40]],"used":[[1000,10],[2000,30],[3000,20],[4000,10]]}}'
 	end
 
 	describe DataSet do
@@ -53,7 +53,7 @@ describe GraphData do
 		end
 
 		it 'should construct from DataSet' do
-			GraphData.from_data_set('hello world', 'B', subject).to_json.should match_json "{\"title\":\"hello world\",\"value_unit\":\"B\",\"value_min\":null,\"value_max\":null,\"time_start\":56000,\"time_end\":60000,\"series\":{\"free\":[[57000,3],[58000,2],[59000,1],[60000,0]],\"used\":[[57000,7],[58000,8],[59000,9],[60000,10]]}}"
+			GraphData.from_data_set('hello world', 'B', 'query:test', subject).to_json.should match_json '{"title":"hello world","value_unit":"B","query_tag_expression":"query:test","tag_set":"location:magi, system:memory","value_min":null,"value_max":null,"time_start":56000,"time_end":60000,"series":{"free":[[57000,3],[58000,2],[59000,1],[60000,0]],"used":[[57000,7],[58000,8],[59000,9],[60000,10]]}}'
 		end
 	end
 end
