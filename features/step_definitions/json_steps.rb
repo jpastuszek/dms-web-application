@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
-autoload :Feed, 'dms-web-application/feed.rb'
-
-Then /I should get (.*) bytes padding in first line/ do |padding_size|
-	source.should_not be_nil
-	source.lines.first.should match(/^:.{#{padding_size}}$/)
+Then /the JSON object should match the following object:/ do |test_json|
+	@json.should == JSON.parse(test_json)
 end
 
-Then /I should get JSON object in first message of ID '(.*)'/ do |message_id|
-	message = source.lines.map{|l| l.split(':', 2)}.select{|id, message| id == message_id}.first
-	message.should_not be_nil, "message of ID '#{message_id}' not found in: #{source}"
+Then /the JSON object should have key '([^']*)'$/ do |key|
+	@json.should have_key(key)
+end
 
-	@json = JSON.parse(message[1])
+Then /the JSON object should have key '([^']*)' of value '(.*)'/ do |key, value|
+	step "the JSON object should have key '#{key}'"
+	@json.should include(key => value)
 end
 
