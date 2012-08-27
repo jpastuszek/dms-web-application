@@ -52,7 +52,9 @@ class Feed < Cuba
 			res['Access-Control-Allow-Origin'] = '*'
 
 			res.stream do
-				res.write ":#{' padding '.ljust(2049, '-')}\n" # padding
+				event_source = EventSource.new.each do |data|
+					res.write data
+				end
 
 				bus.on DataSet, request_id do |data_set|
 					log.info "got DataSet: #{data_set}"
@@ -62,10 +64,8 @@ class Feed < Cuba
 							query.tag_expression,
 							data_set
 					)
-					graph_data.to_json.each_line do |json_line|
-						res.write "data: #{json_line}\n"
-					end
-					res.write "\n"
+
+					event_source.message('data', graph_data.to_json)
 				end
 
 				res.on_close do
