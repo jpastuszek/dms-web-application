@@ -20,11 +20,10 @@ require 'multi_json'
 class GraphData
 	def initialize(title, value_unit, query_tag_expression, tag_set, time_from, time_span, component_data)
 		@data = {}
-		@data[:title] = title
+		@data[:title] = title.to_s
 		@data[:value_unit] = value_unit
-		@data[:query_tag_expression] = query_tag_expression
-		@data[:tag_set] = tag_set
-		@data[:title] = title
+		@data[:query_tag_expression] = query_tag_expression.to_s
+		@data[:tag_set] = tag_set.to_s
 		@data[:value_min] = nil
 		@data[:value_max] = nil
 		@data[:time_start] = to_json_time(time_from.to_f - time_span)

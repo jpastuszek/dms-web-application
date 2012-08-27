@@ -3,6 +3,10 @@ describe EventSource do
 		EventSource.new
 	end
 
+	it 'should return self from each' do
+		subject.each{}.should == subject
+	end
+
 	it 'should generate 2049 byte padding by default' do
 		lines = []
 		subject.each do |line|

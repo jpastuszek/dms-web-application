@@ -18,6 +18,7 @@
 
 require 'cuba'
 require 'dms-web-application/graph_data'
+require 'dms-web-application/event_source'
 
 class Feed < Cuba
 	require_relative 'helpers/streaming'

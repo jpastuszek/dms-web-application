@@ -30,6 +30,7 @@ class EventSource
 	def each(&block)
 		@sink = block
 		write(@padding)
+		self
 	end
 
 	def message(key, body)

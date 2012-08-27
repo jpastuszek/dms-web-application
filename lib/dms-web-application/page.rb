@@ -27,9 +27,9 @@ module Page
 		require_relative 'helpers/empty_param_matcher'
 		require_relative 'helpers/optional_param_matcher'
 
-		app.settings[:template_engine] = 'haml'
-		app.settings[:views] = File.join(File.dirname(__FILE__), '..', '..', 'views')
 		app.plugin Cuba::Render
+		app.settings[:render][:template_engine] = 'haml'
+		app.settings[:render][:views] = File.join(File.dirname(__FILE__), '..', '..', 'views')
 
 		app.settings[:pages] = [
 			'dashboard',
