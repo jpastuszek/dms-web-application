@@ -56,7 +56,12 @@ class Feed < Cuba
 
 				bus.on DataSet, request_id do |data_set|
 					log.info "got DataSet: #{data_set}"
-					graph_data = GraphData.from_data_set(data_set.tag_set.to_s, 'Byte', data_set)
+					graph_data = GraphData.from_data_set(
+							data_set.tag_set,
+							'Byte', 
+							query,
+							data_set
+					)
 					graph_data.to_json.each_line do |json_line|
 						res.write "data: #{json_line}\n"
 					end

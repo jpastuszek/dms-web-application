@@ -23,6 +23,22 @@ Feature: Feed query event source
 		Then I expect 2 ZeroMQ bus messages
 		Then I should get following JSON object in first message of ID 'data'
 		"""
-		{"title":"location:magi, system:memory","value_unit":"Byte","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
+		{"title":"location:magi, query:test, system:memory","value_unit":"Byte","query_tag_expression":"test","tag_set":"location:magi, query:test, system:memory","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
 		"""
+
+	@feed_query @test
+	Scenario: API should handle multiple data streams
+		When I visit /feed/query/test?granularity=1&time_from=2002-08-19%2014:15&time_span=2
+		Then I expect 2 ZeroMQ bus messages
+		Then I should get following JSON object in first message of ID 'data'
+		"""
+		{"title":"location:magi, query:test, system:memory","value_unit":"Byte","query_tag_expression":"test","tag_set":"location:magi, query:test, system:memory","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
+		"""
+		When I visit /feed/query/test2?granularity=1&time_from=2002-08-19%2014:15&time_span=2
+		Then I expect 2 ZeroMQ bus messages
+		Then I should get following JSON object in first message of ID 'data'
+		"""
+		{"title":"location:magi, query:test2, system:memory","value_unit":"Byte","query_tag_expression":"test2","tag_set":"location:magi, query:test2, system:memory","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
+		"""
+		Then dms-console-connector-stub output is displayed
 

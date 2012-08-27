@@ -48,7 +48,6 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 			description: 'deleay stub message sending by given no of seconds', 
 			cast: Float,
 			default: 0.2
-
 		option :test_set,
 			short: :t,
 			description: 'data test set', 
@@ -68,6 +67,8 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 
 					data_points = (message.time_span / message.granularity).to_i
 					time_step = message.granularity
+					
+					p message
 
 					case settings.test_set
 					when 'web'
@@ -88,7 +89,7 @@ Program::Daemon.new('DMS Console Connector', VERSION) do
 						end
 					when 'static'
 						2.times do
-							ds = DataSet.new('memory', 'location:magi, system:memory', message.time_from, message.time_span) do
+							ds = DataSet.new('memory', "location:magi, system:memory, query:#{message.tag_expression}", message.time_from, message.time_span) do
 								data_points.times do |point_no|
 									time = message.time_from.to_f - (point_no * time_step)
 									component_data 'used', time, 3

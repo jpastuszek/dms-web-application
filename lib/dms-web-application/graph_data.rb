@@ -18,10 +18,13 @@
 require 'multi_json'
 
 class GraphData
-	def initialize(title, value_unit, time_from, time_span, component_data)
+	def initialize(title, value_unit, query_tag_expression, tag_set, time_from, time_span, component_data)
 		@data = {}
 		@data[:title] = title
 		@data[:value_unit] = value_unit
+		@data[:query_tag_expression] = query_tag_expression
+		@data[:tag_set] = tag_set
+		@data[:title] = title
 		@data[:value_min] = nil
 		@data[:value_max] = nil
 		@data[:time_start] = to_json_time(time_from.to_f - time_span)
@@ -36,8 +39,8 @@ class GraphData
 		end
 	end
 
-	def self.from_data_set(title, value_unit, data_set)
-		self.new(title, value_unit, data_set.time_from, data_set.time_span, data_set.component_data)
+	def self.from_data_set(title, value_unit, query, data_set)
+		self.new(title, value_unit, query.tag_expression, data_set.tag_set, data_set.time_from, data_set.time_span, data_set.component_data)
 	end
 
 	def to_json(a = nil)
