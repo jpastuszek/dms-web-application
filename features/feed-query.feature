@@ -3,13 +3,14 @@ Feature: Feed query event source
 	The server offers EventSource API for quering data
 
 	Background:
-		Given dms-console-connector-stub test set static
+		Given dms-console-connector-stub test set feed-query-test
 		And dms-console-connector-stub is running
 
 		Given Feed Rack application setting program_id set to feed_query_test string
 		And Feed Rack application mounted under /feed
 
 		Given ZeroMQ service bus is configured with console connector publisher address ipc:///tmp/dms-console-connector-pub and subscriber address ipc:///tmp/dms-console-connector-sub
+		Given log level set to fatal
 
 	@feed_query
 	Scenario: API provides padding data for browsers that buffer data
@@ -34,11 +35,10 @@ Feature: Feed query event source
 		"""
 		{"title":"location:magi, query:test, system:memory","value_unit":"Byte","query_tag_expression":"test","tag_set":"location:magi, query:test, system:memory","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
 		"""
-		When I visit /feed/query/test2?granularity=1&time_from=2002-08-19%2014:15&time_span=2
+		When I visit /feed/query/test2?granularity=1&time_from=2002-08-19%2014:20&time_span=2
 		Then I expect 2 ZeroMQ bus messages
 		Then I should get following JSON object in first message of ID 'data'
 		"""
-		{"title":"location:magi, query:test2, system:memory","value_unit":"Byte","query_tag_expression":"test2","tag_set":"location:magi, query:test2, system:memory","value_min":null,"value_max":null,"time_start":1029766498000,"time_end":1029766500000,"series":{"used":[[1029766499000,3],[1029766500000,3]],"free":[[1029766499000,2],[1029766500000,2]]}}
+		{"title":"location:magi, query:test2, system:memory","value_unit":"Byte","query_tag_expression":"test2","tag_set":"location:magi, query:test2, system:memory","value_min":null,"value_max":null,"time_start":1029766798000,"time_end":1029766800000,"series":{"used":[[1029766799000,3],[1029766800000,3]],"free":[[1029766799000,2],[1029766800000,2]]}}
 		"""
-		Then dms-console-connector-stub output is displayed
 

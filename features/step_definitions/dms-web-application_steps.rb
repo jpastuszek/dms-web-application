@@ -15,3 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Distributed Monitoring System.  If not, see <http://www.gnu.org/licenses/>.
 
+Given /log level set to (.*)/ do |log_level|
+	Logging.logger.root.level = log_level.to_sym
+end
+
