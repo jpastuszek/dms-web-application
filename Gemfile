@@ -1,6 +1,5 @@
 source "http://rubygems.org"
 
-gem "dms-core", :path => "../dms-core"
 gem "cli", "~> 1.1.1"
 gem "ruby-ip", "~> 0.9"
 gem "facter", "~> 1.6.5"
@@ -16,6 +15,10 @@ gem "activesupport", "~> 3.0"
 gem "sprockets", "~> 2.0"
 gem "ffi", "~> 1.0"
 #gem "yui-compressor", "~> 0.9.6"
+
+# core dependencies
+gem "dms-core", :path => "../dms-core"
+gem "rubytree", "~> 0.8.3"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
