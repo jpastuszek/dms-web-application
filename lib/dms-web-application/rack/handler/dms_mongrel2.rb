@@ -125,7 +125,7 @@ module Rack
 					log.info 'starting Rack handler'
 					@zmq.pull_connect(@recv_address) do |pull|
 						@zmq.pub_connect(@send_address) do |pub|
-							pull.on_raw do |msg|
+							pull.on :raw do |msg|
 								log.debug "got Mongrel2 request: #{msg}"
 								request = Request.parse(msg)
 								if request.disconnect?
