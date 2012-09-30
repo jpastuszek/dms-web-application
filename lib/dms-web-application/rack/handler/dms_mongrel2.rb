@@ -137,21 +137,21 @@ module Rack
 
 								begin
 									log.debug "sending header: #{headers}"
-									pub.send_raw Response.header(request.uuid, request.conn_id, status, headers).to_string
+									pub.send Response.header(request.uuid, request.conn_id, status, headers).to_string
 
 									response.each do |body|
 										log.debug "sending body: #{body}"
-										pub.send_raw Response.body(request.uuid, request.conn_id, body).to_string
+										pub.send Response.body(request.uuid, request.conn_id, body).to_string
 									end
 								ensure
 									if response.respond_to? :callback
 										response.callback do
 											log.debug "sending done"
-											pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+											pub.send Response.close(request.uuid, request.conn_id).to_string
 										end
 									else
 										log.debug "sending done"
-										pub.send_raw Response.close(request.uuid, request.conn_id).to_string
+										pub.send Response.close(request.uuid, request.conn_id).to_string
 										response.close if response.respond_to? :close
 									end
 								end
