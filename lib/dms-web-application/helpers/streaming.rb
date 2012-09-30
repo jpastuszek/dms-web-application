@@ -37,28 +37,28 @@ module Streaming
 		end
 
 		def close
-			@callbacks.each do |callback|
-				callback.call 
-			end
-			@callbacks.clear
+			@callbacks.shift.call until @callbacks.empty?
+		end
+	end
+
+	module StreamResponse
+		def stream(&app)
+			@body = Stream.new(&app)
+		end
+
+		def on_close(&callback)
+			@body.callback(&callback)
+		end
+
+		def close
+			@body.close if @body.is_a? Stream
 		end
 	end
 
 	def self.setup(cuba)
-		# How do I do it withoud using eval????
-		Cuba::Response.class_eval """
-			def stream(&app)
-				@body = Stream.new(&app)
-			end
-
-			def on_close(&callback)
-				@body.callback(&callback)
-			end
-
-			def close
-				@body.close if @body.is_a? Stream
-			end
-		"""
+		Cuba::Response.class_eval do
+			include StreamResponse
+		end
 	end
 end
 
