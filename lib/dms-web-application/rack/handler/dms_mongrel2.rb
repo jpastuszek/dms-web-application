@@ -140,13 +140,13 @@ module Rack
 									pub.send Response.header(request.uuid, request.conn_id, status, headers).to_string
 
 									response.each do |body|
-										log.debug "sending body: #{body}"
+										#log.debug "sending body: #{body}"
 										pub.send Response.body(request.uuid, request.conn_id, body).to_string
 									end
 								ensure
 									if response.respond_to? :callback
 										response.callback do
-											log.debug "sending done"
+											log.debug "sending closed"
 											pub.send Response.close(request.uuid, request.conn_id).to_string
 										end
 									else

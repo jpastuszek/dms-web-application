@@ -57,8 +57,8 @@ class Feed < Cuba
 					res.write data
 				end
 
-				bus.on DataSet, request_id do |data_set|
-					log.info "got DataSet: #{data_set}"
+				request_handler = bus.on DataSet, request_id do |data_set|
+					log.info "got DataSet: #{data_set} for #{request_id}"
 					graph_data = GraphData.from_data_set(
 							data_set.tag_set,
 							'Byte', 
@@ -70,8 +70,8 @@ class Feed < Cuba
 				end
 
 				res.on_close do
-					#TODO: deregistration
-					#bus.deregister_on DataSet, request_id
+					log.info "deregistering DataSet handler for #{request_id}"
+					request_handler.close
 				end
 			end
 		end
