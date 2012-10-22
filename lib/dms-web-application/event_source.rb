@@ -23,13 +23,17 @@ class EventSource
 		end
 	end
 
-	def initialize(padding_size = 2049, paddning_msg = ' padding ')
+	def initialize(ping_interval = 8, padding_size = 2049, paddning_msg = ' padding ')
 		@padding = comment_line(paddning_msg.ljust(padding_size, '-'))
+		@ping_interval = ping_interval
 	end
 
 	def each(&block)
 		@sink = block
 		write(@padding)
+		ZeroMQService.poller.every(@ping_interval) do
+			ping
+		end
 		self
 	end
 
@@ -42,6 +46,10 @@ class EventSource
 
 	def comment(message)
 		write comment_line(message)
+	end
+
+	def ping
+		comment 'ping'
 	end
 
 	private
