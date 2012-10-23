@@ -31,9 +31,9 @@ class EventSource
 	def each(&block)
 		@sink = block
 		write(@padding)
-		ZeroMQService.poller.every(@ping_interval) do
-			ping
-		end
+		
+		# ping the other end by sending comment every few seconds to detect dead connection
+		@ping = ZeroMQService.poller.every(@ping_interval){ping}
 		self
 	end
 
@@ -50,6 +50,12 @@ class EventSource
 
 	def ping
 		comment 'ping'
+	end
+
+	def close
+		@sink = nil
+		#TODO: scheduler event needs to be canceled
+		#@ping.stop if @ping
 	end
 
 	private

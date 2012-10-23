@@ -70,6 +70,8 @@ class Feed < Cuba
 				end
 
 				res.on_close do
+					log.info "closing event source"
+					event_source.close
 					log.info "deregistering DataSet handler for #{request_id}"
 					request_handler.close
 				end

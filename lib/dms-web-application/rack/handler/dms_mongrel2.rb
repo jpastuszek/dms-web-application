@@ -119,6 +119,8 @@ module Rack
 					@zmq = zeromq
 					@poller = poller
 					@app = app
+
+					@active_response = {}
 				end
 
 				def start
@@ -128,15 +130,20 @@ module Rack
 							pull.on :raw do |msg|
 								log.debug "got Mongrel2 request: #{msg}"
 								request = Request.parse(msg)
+
 								if request.disconnect?
-									log.debug "client connection lost"
+									log.debug "[#{request.conn_id}] client connection lost"
+									# if associated connection has active response try to close it
+									p @active_response
+									response = @active_response.delete(request.conn_id) or next
+									response.close if response.respond_to? :close
 									next
 								end
 
 								status, headers, response = @app.call(request.env)
 
 								begin
-									log.debug "sending header: #{headers}"
+									log.debug "[#{request.conn_id}] sending header: #{headers}"
 									pub.send Response.header(request.uuid, request.conn_id, status, headers).to_string
 
 									response.each do |body|
@@ -146,11 +153,14 @@ module Rack
 								ensure
 									if response.respond_to? :callback
 										response.callback do
-											log.debug "sending closed"
+											log.debug "[#{request.conn_id}] sending closed"
 											pub.send Response.close(request.uuid, request.conn_id).to_string
 										end
+										# save response so we can call callback (close) when it gets disconnected
+										@active_response[request.conn_id] = response
+										p @active_response
 									else
-										log.debug "sending done"
+										log.debug "[#{request.conn_id}] sending done"
 										pub.send Response.close(request.uuid, request.conn_id).to_string
 										response.close if response.respond_to? :close
 									end
