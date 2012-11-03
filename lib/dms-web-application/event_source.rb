@@ -53,9 +53,8 @@ class EventSource
 	end
 
 	def close
+		@ping.stop if @ping
 		@sink = nil
-		#TODO: scheduler event needs to be canceled
-		#@ping.stop if @ping
 	end
 
 	private

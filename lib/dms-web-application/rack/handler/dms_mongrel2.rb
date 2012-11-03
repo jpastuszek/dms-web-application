@@ -133,8 +133,6 @@ module Rack
 
 								if request.disconnect?
 									log.debug "[#{request.conn_id}] client connection lost"
-									# if associated connection has active response try to close it
-									p @active_response
 									response = @active_response.delete(request.conn_id) or next
 									response.close if response.respond_to? :close
 									next
@@ -153,12 +151,15 @@ module Rack
 								ensure
 									if response.respond_to? :callback
 										response.callback do
-											log.debug "[#{request.conn_id}] sending closed"
-											pub.send Response.close(request.uuid, request.conn_id).to_string
+											if @active_response.delete(request.conn_id)
+												log.debug "[#{request.conn_id}] sending closed"
+												pub.send Response.close(request.uuid, request.conn_id).to_string
+											else
+												log.debug "[#{request.conn_id}] already closed"
+											end
 										end
 										# save response so we can call callback (close) when it gets disconnected
 										@active_response[request.conn_id] = response
-										p @active_response
 									else
 										log.debug "[#{request.conn_id}] sending done"
 										pub.send Response.close(request.uuid, request.conn_id).to_string
