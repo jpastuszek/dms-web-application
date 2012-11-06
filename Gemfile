@@ -19,7 +19,7 @@ gem "ffi", "~> 1.0"
 # core dependencies
 gem "dms-core", :path => "../dms-core"
 gem "rubytree", "~> 0.8.3"
-gem "periodic-scheduler", "~> 0.6"
+gem "periodic-scheduler", "~> 0.7"
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
