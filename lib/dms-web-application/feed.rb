@@ -32,10 +32,10 @@ class Feed < Cuba
 	self.plugin RequestID
 
 	self.define do
-		on 'query/(.*)', 
+		on 'tag_query/(.*)', 
 			param?(:time_from, Time.now.utc.to_s), 
 			param?(:time_span, 60*60), 
-			param?(:granularity, 1) do |tag_expression, time_from, time_span, granularity|
+			param?(:granularity, 1) do |tag_query, time_from, time_span, granularity|
 			time_from = Time.parse(time_from + ' UTC')
 			time_span = Float(time_span)
 			granularity = Float(granularity)
@@ -43,9 +43,13 @@ class Feed < Cuba
 			# limit output to 2000 samples
 			granularity = time_span / 2000 if time_span / granularity > 2000
 
-			query = DataSetQuery.new(tag_expression, time_from, time_span.to_f, granularity.to_f)
-			log.debug "sending query: #{query}"
-			bus.send query, topic: request_id
+			tag_query = tag_query.to_tag_query
+
+			tag_query.each do |tag_expression|
+				query = DataSetQuery.new(tag_expression, time_from, time_span.to_f, granularity.to_f)
+				log.debug "sending query: #{query}"
+				bus.send query, topic: request_id
+			end
 
 			res['Content-Type'] = 'text/event-stream'
 			res['Cache-Control'] = 'no-cache'
@@ -60,9 +64,7 @@ class Feed < Cuba
 				request_handler = bus.on DataSet, request_id do |data_set|
 					log.info "got DataSet: #{data_set} for #{request_id}"
 					graph_data = GraphData.from_data_set(
-							data_set.tag_set,
 							'Byte', 
-							query.tag_expression,
 							data_set
 					)
 

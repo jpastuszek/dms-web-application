@@ -72,24 +72,24 @@
           %strong= (time_from - time_span).utc.strftime('%Y-%m-%d %H:%M') + ' UTC'
 
 
-- tag_query.each_with_index do |tag_expression, set_no|
+- if tag_query
   %section
     .page-header
       %h2
-        Results for query: #{tag_expression}
+        Results for query: #{tag_query}
     .row
       .span12
-        %div{id: "graph_container_#{set_no}"}
+        %div{id: "graph_container"}
 
         :javascript
           var graph_no = 1;
-          var graph_container = $("#graph_container_#{set_no}")
+          var graph_container = $("#graph_container")
           var granularity = #{time_span} / graph_container.width()
 
           $.eventsource({
-            label: 'TagExpression-#{tag_expression}',
+            label: 'TagQuery-#{tag_query}',
 
-            url: '#{root_uri('feed', 'query', tag_expression, time_from: time_from.utc, time_span: time_span)}' + '&granularity=' + granularity ,
+            url: '#{root_uri('feed', 'tag_query', tag_query, time_from: time_from.utc, time_span: time_span)}' + '&granularity=' + granularity ,
             dataType: 'json',
 
             open: function() {
@@ -105,10 +105,10 @@
                 })
               }
 
-              graph_container.append("<h3>" + data.title + "</h3>")
-              graph_container.append("<div style='width: 100%; height:240px' id='graph_#{set_no}" + graph_no + "'></div>")
+              graph_container.append("<h3>" + data.tag_set + "</h3>")
+              graph_container.append("<div style='width: 100%; height:240px' id='graph-" + graph_no + "'></div>")
 
-              $.plot($("#graph_#{set_no}" + graph_no), series, {
+              $.plot($("#graph-" + graph_no), series, {
                     xaxis: {
                       mode: "time",
                       timeformat: "%y/%m/%d %H:%M",
