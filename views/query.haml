@@ -8,6 +8,8 @@
   .row
     .span12
       %form.well.form-inline{action: relative_uri('submit'), method: 'get'}
+        %label
+          Query
         %input.span4.search-query{name: 'tag_query', type: 'text', placeholder: 'comma separated tags', value: tag_query_string}
         %label
           form
@@ -27,7 +29,7 @@
                 %option{selected: time_span_unit == unit}>= unit
 
         %button.btn.btn-primary{type: 'submit'}
-          Query
+          %i.icon-play-circle.icon-white
 
       :javascript
         $('.search-query').popover({
@@ -89,7 +91,7 @@
     .row
       .span12
         .alert.alert-info
-          Quering for:
+          Quering for
           - tag_query.each_with_index do |tag_expression, set_no|
             %strong= tag_expression
             - if set_no + 1 < tag_query.length
@@ -98,6 +100,7 @@
           %strong= time_from.utc.strftime('%Y-%m-%d %H:%M') + ' UTC'
           back to 
           %strong= (time_from - time_span).utc.strftime('%Y-%m-%d %H:%M') + ' UTC'
+          \...
 
 
 - if tag_query
