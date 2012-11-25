@@ -30,6 +30,36 @@
           Query
 
       :javascript
+        $('.search-query').popover({
+          trigger: 'focus',
+          placement: 'bottom',
+          delay: { show: 800, hide: 0 },
+          html: true,
+          title: 'Query format',
+          content: '' +
+          '  <dl>' +
+          '    <dt>Tag</dt>' +
+          '    <dd><code>string</code> | <code>/regexp/</code></dd>' +
+          '    <dt>Tag expression</dt>' +
+          '    <dd><code>tag</code>[<code>:tag</code> ... ]</dd>' +
+          '    <dt>Tag expression query</dt>' +
+          '    <dd><code>tag_expr</code>[<code>| tag_expr</code> ... ]</dd>' +
+          '  </dl>' +
+          '  <dl>' +
+          '    <dt>Full tag expresion</dt>' +
+          '    <dd>disk:usage:ROOT</dd>' +
+          '    <dt>Subset of tag expression</dt>' +
+          '    <dd>usage:ROOT</dd>' +
+          '    <dd>ROOT</dd>' +
+          '    <dd>usage:ROOT</dd>' +
+          '    <dt>Tag match with regexp</dt>' +
+          '    <dd>disk:usage:/^RO/</dd>' +
+          '    <dd>system:/.*/:1</dd>' +
+          '    <dt>Multiple tag expressions query</dt>' +
+          '    <dd>disk:usage | system:load</dd>' +
+          '  </dl>'
+        })
+        
         var setDateFromServer = function() {
           $.ajax({
             url: '#{root_uri('server_time', 'utc', 'time')}',
