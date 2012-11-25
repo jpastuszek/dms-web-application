@@ -38,25 +38,23 @@
           title: 'Query format',
           content: '' +
           '  <dl>' +
-          '    <dt>Tag</dt>' +
+          '    <dt>Token</dt>' +
           '    <dd><code>string</code> | <code>/regexp/</code></dd>' +
+          '    <dt>Tag pattern</dt>' +
+          '    <dd><code>token</code>[<code>:token</code> ... ]</dd>' +
           '    <dt>Tag expression</dt>' +
-          '    <dd><code>tag</code>[<code>:tag</code> ... ]</dd>' +
-          '    <dt>Tag expression query</dt>' +
+          '    <dd><code>tag_pat</code>[<code>, tag_pat</code> ... ]</dd>' +
+          '    <dt>Tag query</dt>' +
           '    <dd><code>tag_expr</code>[<code>| tag_expr</code> ... ]</dd>' +
           '  </dl>' +
           '  <dl>' +
-          '    <dt>Full tag expresion</dt>' +
+          '    <dt>Examples</dt>' +
           '    <dd>disk:usage:ROOT</dd>' +
-          '    <dt>Subset of tag expression</dt>' +
           '    <dd>usage:ROOT</dd>' +
           '    <dd>ROOT</dd>' +
-          '    <dd>usage:ROOT</dd>' +
-          '    <dt>Tag match with regexp</dt>' +
           '    <dd>disk:usage:/^RO/</dd>' +
-          '    <dd>system:/.*/:1</dd>' +
-          '    <dt>Multiple tag expressions query</dt>' +
-          '    <dd>disk:usage | system:load</dd>' +
+          '    <dd>disk:usage, location:/lucy/</dd>' +
+          '    <dd>disk:usage | system:/.*/</dd>' +
           '  </dl>'
         })
         
