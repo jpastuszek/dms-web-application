@@ -64,7 +64,7 @@ class Feed < Cuba
 				request_handler = bus.on DataSet, request_id do |data_set|
 					log.info "got DataSet: #{data_set} for #{request_id}"
 					graph_data = GraphData.from_data_set(
-							'Byte', 
+							'Units', 
 							data_set
 					)
 
